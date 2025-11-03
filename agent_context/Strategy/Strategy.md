@@ -172,9 +172,3 @@ After taking external liquidity (aggressive move), price often retraces to rebal
 - News spikes that haven't produced a **clean structural read**
 - "Fake shifts": Displacement that occurs while **leaving the draw liquidity intact**
   - Example: Bullish BOS + FVG forms, but PDH remains untouched above = likely fake shift designed to create liquidity below for the real move up
-
----
-
-## Risk
-- 0.25–1.0R per idea, max 2 concurrent exposures in the same bias
-- One loss per session per symbol before waiting for fresh structure
