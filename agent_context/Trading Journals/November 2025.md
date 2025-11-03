@@ -26,6 +26,7 @@ Biases:
 | ----- | ------ | -------- | -------- | --------- | ------- |
 | 1     | BTC    | $105,560 | $106,564 | Short     | -$10.82 |
 | 2     | BTC    | $106,795 | $107,372 | Long      | $3.42   |
+| 3     | BTC    | $107,367 | $105,996 | Short     | $9.74   |
 
 ### Trade 1 Review
 Trade 1 was a hefty loss. I was pennies away from my take-profit level but it did not quite meet it.
@@ -39,3 +40,8 @@ I had my stop-loss above the recent 5m high that formed right after the big draw
 This trade was a win, both financially and because I actually had a draw on liquidity and I already saw the rejection following the SSL sweep.
 
 I see that price actually wicked through the FVG (which was my draw on liquidity; I had my TP at the top of the FVG) on the 15m chart. Could it also reverse from here and actually go lower?
+
+## Trade 3 Review
+I went short on BTC again because I saw the bearish momentum (I ditched that expectation of bullish reversal) and price pulling into a premium after filling a FVG, so I anticipated that price would reverse after taking that internal liquidity, which it did. 
+
+I will admit that I closed my position early. Totally paper-hands. The chart didn't show momentum slowing, so it could actually hit my TP, but I closed early and took profit because I wasn't confident.

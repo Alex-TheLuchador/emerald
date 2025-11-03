@@ -45,7 +45,7 @@ def fetch_hl_raw(
         coin: The coin symbol (e.g., "BTC").
         interval: The candle interval (e.g., "1m", "5m", "15m", "1h", "4h", "1d").
         hours: Lookback period in hours.
-        limit: Maximum number of candles to fetch.
+        limit: Maximum number of candles to fetch. 250 at most.
         url: The Hyperliquid API endpoint URL. This defaults to "https://api.hyperliquid.xyz/info".
         out: Optional file path to write output.
         convert: Whether to convert raw to human-usable candles.
