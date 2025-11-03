@@ -84,6 +84,14 @@ Standard settings for every call:
   - significant_swings=True (always annotate swings)
   - fvg=True (always annotate Fair Value Gaps)
 
+Warning: Adhere to these guidelines strictly:
+  - 1m interval must look back no more than 1.5 hours.
+  - 5m interval must look back no more than 6 hours.
+  - 15m interval must look back no more than 24 hours.
+  - 1h interval must look back no more than 84 hours.
+  - 4h interval must look back no more than 336 hours.
+  - 1d interval must look back no more than 2016 hours.
+
 Mission:
 - Fetch and analyze Hyperliquid perpetuals data
 - Identify profitable setups aligned with context document strategies
