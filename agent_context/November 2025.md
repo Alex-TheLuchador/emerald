@@ -51,7 +51,7 @@ I see that price actually wicked through the FVG (which was my draw on liquidity
 ### Trade 3 Review
 I went short on BTC again because I saw the bearish momentum (I ditched that expectation of bullish reversal) and price pulling into a premium after filling a FVG, so I anticipated that price would reverse after taking that internal liquidity, which it did. 
 
-I will admit that I closed my position early. Totally paper-hands. The chart didn't show momentum slowing, so it could actually hit my TP, but I closed early and took profit because I wasn't confident.
+I will admit that I closed my position early. 100% paper hands. The chart didn't show momentum slowing, so it could actually hit my TP, but I closed early and took profit because I wasn't confident.
 
 <hr>
 
