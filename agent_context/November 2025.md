@@ -22,11 +22,12 @@ Biases:
 <strong>Overall Bias: Bearish</strong>
 
 ### Trades
-| Trade | Crypto | Entry    | Exit     | Direction | PnL     |
-| ----- | ------ | -------- | -------- | --------- | ------- |
-| 1     | BTC    | $105,560 | $106,564 | Short     | -$10.82 |
-| 2     | BTC    | $106,795 | $107,372 | Long      | $3.42   |
-| 3     | BTC    | $107,367 | $105,996 | Short     | $9.74   |
+| Trade                  | Crypto | Entry    | Exit     | Direction | PnL                    |
+| ---------------------- | ------ | -------- | -------- | --------- | ---------------------- |
+| 1                      | BTC    | $105,560 | $106,564 | Short     | -$10.82                |
+| 2                      | BTC    | $106,795 | $107,372 | Long      | $3.42                  |
+| 3                      | BTC    | $107,367 | $105,996 | Short     | $9.74                  |
+| <strong>TOTAL</strong> |        |          |          |           | <strong>$2.34</strong> |
 
 ### Trade 1 Review
 Trade 1 was a hefty loss. I was pennies away from my take-profit level but it did not quite meet it.
@@ -41,7 +42,41 @@ This trade was a win, both financially and because I actually had a draw on liqu
 
 I see that price actually wicked through the FVG (which was my draw on liquidity; I had my TP at the top of the FVG) on the 15m chart. Could it also reverse from here and actually go lower?
 
-## Trade 3 Review
+### Trade 3 Review
 I went short on BTC again because I saw the bearish momentum (I ditched that expectation of bullish reversal) and price pulling into a premium after filling a FVG, so I anticipated that price would reverse after taking that internal liquidity, which it did. 
 
 I will admit that I closed my position early. Totally paper-hands. The chart didn't show momentum slowing, so it could actually hit my TP, but I closed early and took profit because I wasn't confident.
+
+<hr>
+
+## November 4
+
+Time of writing: 14:35 UTC
+
+### ETH
+Biases:
+1. Daily
+    - Bearish
+2. 4h
+    - Bearish
+3. 1h
+    - Bearish
+
+<strong>Overall Bias: Bearish</strong>
+
+### Trades
+| Trade                  | Crypto | Entry    | Exit     | Direction | PnL                    |
+| ---------------------- | ------ | -------- | -------- | --------- | ---------------------- |
+| 1                      | ETH    | $3,496.2 | $3,473.0 | Short     | $4.88                  |
+| 2                      | BTC    | $        | $        | Short     | $                      |
+| 3                      | BTC    | $        | $        | Short     | $                      |
+| <strong>TOTAL</strong> |        |          |          |           | <strong>$2.34</strong> |
+
+### Trade 1 Review
+I entered short because ETH doesn't have a close liquidity pool below, so I expected it to continue falling
+
+The trade was profitable (thank God) and this one really had all the strengths aligned:
+- HTFs were all bearish
+- 1h dealing range was clear, price was in a premium and I went short just before it entered discount range. 
+
+Not the cleanest entry, but we still got a lot of good things from this trade.
