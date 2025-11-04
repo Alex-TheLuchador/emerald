@@ -5,6 +5,7 @@ import anthropic
 import dotenv
 from langchain.agents import create_agent
 from langchain.chat_models import init_chat_model
+from langchain.tools import tool
 from rich.console import Console
 from rich.markdown import Markdown
 
@@ -16,23 +17,75 @@ if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
 from tools.tool_fetch_hl_raw import fetch_hl_raw
+from tools.context_manager import ContextManager
 
 
-def load_markdown_context(context_dir: Path) -> str:
-    """Aggregate markdown files for use as system context."""
-    if not context_dir.exists():
-        return ""
+#---------------------------
+# INITIALIZE CONTEXT MANAGER
+#---------------------------
+context_mgr = ContextManager(BASE_DIR / "agent_context")
 
-    docs = []
-    for path in sorted(context_dir.rglob("*.md"), key=lambda p: p.relative_to(context_dir).as_posix()):
-        relative_title = path.relative_to(context_dir).with_suffix("").as_posix()
-        try:
-            text = path.read_text(encoding="utf-8").strip()
-        except Exception as exc:
-            docs.append(f"### {relative_title}\n<Failed to read file: {exc}>")
-            continue
-        docs.append(f"### {relative_title}\n{text}")
-    return "\n\n".join(docs)
+
+#---------------------------
+# CONTEXT RETRIEVAL TOOL
+#---------------------------
+@tool
+def get_context(
+    timeframe: str = None,
+    concept: str = None,
+    tag: str = None,
+    date: str = None,
+    coin: str = None,
+) -> str:
+    """Retrieve specific strategy or journal context from documentation.
+    
+    Use this tool to load detailed context only when needed. This keeps token usage low
+    by avoiding loading all documentation on every query.
+    
+    Args:
+        timeframe: Chart timeframe (e.g., "15m", "1h", "4h", "daily")
+        concept: Trading concept (e.g., "entry", "structure", "liquidity", "risk")
+        tag: Special tags (e.g., "journal" for trade reviews)
+        date: Date for journal entries (e.g., "2025-11-03")
+        coin: Cryptocurrency symbol for journal entries (e.g., "BTC", "ETH")
+    
+    Returns:
+        Formatted context sections matching the filters.
+    
+    Examples:
+        - get_context(timeframe="15m", concept="entry") → Returns 15m entry setup rules
+        - get_context(concept="liquidity") → Returns liquidity concept explanations
+        - get_context(tag="journal", date="2025-11-03") → Returns Nov 3 journal entries
+        - get_context(tag="journal", coin="BTC") → Returns all BTC trade reviews
+    """
+    filters = {}
+    if timeframe:
+        filters['timeframe'] = timeframe
+    if concept:
+        filters['concept'] = concept
+    if tag:
+        filters['tag'] = tag
+    if date:
+        filters['date'] = date
+    if coin:
+        filters['coin'] = coin
+    
+    sections = context_mgr.get_sections(**filters)
+    
+    if not sections:
+        available = context_mgr.get_context_menu()
+        return f"No sections found matching those filters.\n\n{available}"
+    
+    # Format sections for context
+    formatted = []
+    for section in sections:
+        formatted.append(f"## {section['title']}")
+        formatted.append(f"*Source: {section['source_file']}*\n")
+        formatted.append(section['content'])
+        formatted.append("")  # Blank line between sections
+    
+    return "\n".join(formatted)
+
 
 #---------------------------
 # API SETUP
@@ -50,13 +103,22 @@ client = anthropic.Anthropic(
 #---------------------------
 model = init_chat_model(
     model="anthropic:claude-sonnet-4-5",
-    max_tokens=2048,  # Balanced limit
+    max_tokens=2048,
     temperature=0.25,
     timeout=45,
     max_retries=2,
 )
 
-CONTEXT_DOCUMENTS = load_markdown_context(BASE_DIR / "agent_context")
+#---------------------------
+# STEP 2: BUILD SYSTEM PROMPT
+#---------------------------
+
+# Load only core context by default (dramatically reduces token usage)
+CORE_CONTEXT = context_mgr.get_core_context()
+CONTEXT_MENU = context_mgr.get_context_menu()
+
+# Get context stats for transparency
+stats = context_mgr.get_stats()
 
 SYSTEM_PROMPT_CORE = """You are EMERALD (Effective Market Evaluation and Rigorous Analysis for Logical Decisions), a Hyperliquid perps trading assistant.
 
@@ -66,13 +128,16 @@ Core Directive:
 
 Behavioral Guidelines:
 - Be concise and actionable. No fluff.
-- Remember: Each tool call adds significant context - be economical.
 - Only call tools if the user requests information that specifically requires current price data or analysis.
 - Maximum 3 tool calls per response.
-- Analyze the returned data fully before deciding if another timeframe is needed.
-- If you need multiple timeframes, ask the user to confirm before fetching more.
 - If calling fetch_hl_raw multiple times, use different intervals each time.
 - Confirm missing required parameters before calling tools.
+
+Context Management:
+- You have access to detailed strategy and journal context via the get_context tool.
+- Core personality and philosophy are always loaded.
+- Request specific context sections when you need detailed rules or past trade analysis.
+- Use get_context to load only what's relevant to the current query—this keeps responses fast and cost-effective.
 
 Tool Usage (fetch_hl_raw):
 Required parameters (confirm if missing):
@@ -95,31 +160,61 @@ Warning: Adhere to these guidelines strictly:
   - 4h interval must look back no more than 336 hours.
   - 1d interval must look back no more than 2016 hours.
 
+Tool Usage (get_context):
+Use this to retrieve specific sections of strategy documentation or journal entries.
+Available filters:
+  - timeframe: "15m", "1h", "4h", "daily", etc.
+  - concept: "entry", "structure", "liquidity", "risk", etc.
+  - tag: "journal" for trade reviews
+  - date: "2025-11-03" for specific journal dates
+  - coin: "BTC", "ETH", etc. for coin-specific journals
+
+Examples:
+  - User asks about 15m entries → Call get_context(timeframe="15m", concept="entry")
+  - User asks about liquidity → Call get_context(concept="liquidity")
+  - User asks what happened in last BTC trade → Call get_context(tag="journal", coin="BTC")
+  - User asks for analysis → Fetch data first, THEN load relevant strategy context if needed
+
 Mission:
 - Fetch and analyze Hyperliquid perpetuals data
 - Identify profitable setups aligned with context document strategies
 - Provide clear trade ideas with reasoning based on the documented approach"""
 
-if CONTEXT_DOCUMENTS:
-    SYSTEM_PROMPT = f"{SYSTEM_PROMPT_CORE}\n\n---\nContext Documents:\n{CONTEXT_DOCUMENTS}"
-else:
-    SYSTEM_PROMPT = SYSTEM_PROMPT_CORE
+# Show context menu so agent knows what's available
+SYSTEM_PROMPT = f"""{SYSTEM_PROMPT_CORE}
+
+---
+CONTEXT SYSTEM STATUS:
+- Total sections available: {stats['total_sections']}
+- Core context loaded by default (personality, philosophy)
+- Detailed strategy sections available on-demand
+
+{CONTEXT_MENU}
+
+---
+ALWAYS-LOADED CORE CONTEXT:
+{CORE_CONTEXT}
+"""
 
 #---------------------------
-# STEP 2: CREATE THE AGENT
+# STEP 3: CREATE THE AGENT
 #---------------------------
 agent = create_agent(
     model=model,
-    tools=[fetch_hl_raw],
+    tools=[fetch_hl_raw, get_context],
     system_prompt=SYSTEM_PROMPT,
 )
 
 #---------------------------
-# STEP 3: INVOKE THE AGENT
+# STEP 4: INVOKE THE AGENT
 #---------------------------
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: python agent.py '<your prompt>'")
+        print("\nContext System Info:")
+        print(f"  - {stats['total_sections']} sections available")
+        print(f"  - {stats['total_characters']:,} total characters indexed")
+        print(f"  - Metadata keys: {', '.join(stats['metadata_keys'])}")
         sys.exit(1)
     
     user_prompt = " ".join(sys.argv[1:])

@@ -1,5 +1,6 @@
 # STRATEGY
 
+<!-- meta: core -->
 ## Objective
 Trade **with** the prevailing structure only, from **discount** (longs) or **premium** (shorts), using **swing structure, BOS/CHoCH, liquidity pools, displacement, and FVGs** as confirmation.
 
@@ -7,6 +8,7 @@ Trade **with** the prevailing structure only, from **discount** (longs) or **pre
 
 ## Core Concepts
 
+<!-- meta: core, concept=market-structure -->
 ### Market Structure Fundamentals
 **Swing High**: Highest high in the middle, lower highs on both sides  
 **Swing Low**: Lowest low in the middle, higher lows on both sides
@@ -23,6 +25,7 @@ Trade **with** the prevailing structure only, from **discount** (longs) or **pre
 
 ---
 
+<!-- meta: concept=liquidity -->
 ### Draw on Liquidity
 
 **Core Concept**: The market moves from liquidity pool to liquidity pool like a pendulum. Your need to identify which pool was just taken and which pool is next.
@@ -56,6 +59,7 @@ Trade **with** the prevailing structure only, from **discount** (longs) or **pre
 
 ---
 
+<!-- meta: concept=liquidity -->
 ### Internal vs External Range Liquidity
 
 **Why This Framework Exists**: It provides a two-tier target system and explains why price retraces after big moves. This is essential for layered profit-taking and understanding post-breakout behavior.
@@ -106,12 +110,14 @@ After taking external liquidity (aggressive move), price often retraces to rebal
 
 ---
 
+<!-- meta: core -->
 ## Timeframes
 - **HTFs to align:** Weekly → Daily → 4H → 1H
 - **Execution:** 15m or 5m (refine on 1–3m only after confirmation)
 
 ---
 
+<!-- meta: concept=market-structure -->
 ## Bias & Dealing Range
 1. **Define HTF bias:** 
    - Bullish if successive **HH/HL** and last significant **BOS up** holds across W/D/4H/1H
@@ -123,6 +129,7 @@ After taking external liquidity (aggressive move), price often retraces to rebal
 
 ---
 
+<!-- meta: concept=confirmation -->
 ## Liquidity & Confirmation
 - **Liquidity pools:** Prior day H/L, session H/L (Asia/London/NY), equal highs/lows, obvious swing stops
 - **Draw on liquidity**: Identify which pool was just taken and which is next in the direction of structure
@@ -131,6 +138,7 @@ After taking external liquidity (aggressive move), price often retraces to rebal
 
 ---
 
+<!-- meta: concept=entry -->
 ## Long Setup (mirror for shorts)
 
 **HTF Alignment:**
@@ -155,6 +163,7 @@ After taking external liquidity (aggressive move), price often retraces to rebal
 
 ---
 
+<!-- meta: concept=entry -->
 ## Short Setup (bearish)
 - Same logic inverted: 
   - **Premium location** (above 50% of 1H range)
@@ -165,6 +174,7 @@ After taking external liquidity (aggressive move), price often retraces to rebal
 
 ---
 
+<!-- meta:core -->
 ## Do-Not-Trade Filters
 - HTF misalignment (any W/D/4H/1H in conflict)
 - No displacement (weak breaks without FVG creation)
