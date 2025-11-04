@@ -78,7 +78,8 @@ Biases:
 | 1                      | ETH    | $3,489.6 | $3,502.2 | Short     | $-2.41                  |
 | 2                      | ETH    | $3,496.2 | $3,473.0 | Short     | $4.88                   |
 | 3                      | ETH    | $3,391.0 | $3,406.9 | Short     | -$4.98                  |
-| <strong>TOTAL</strong> |        |          |          |           | <strong>-$2.51</strong> |
+| 4                      | ETH    | $3,278.1 | $3,245.9 | Short     | $5.50                   |
+| <strong>TOTAL</strong> |        |          |          |           | <strong>$2.99</strong> |
 
 <!-- meta: tag=journal, date=2025-11-04, trade=1, coin=ETH -->
 ### Trade 1 Review

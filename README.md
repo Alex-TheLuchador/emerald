@@ -1,6 +1,6 @@
-# Emerald Agent
+# Emerald
 
-Emerald is a LangChain-driven command-line assistant focused on Hyperliquid perpetuals. The project combines a lightweight agent wrapper (`agent/agent.py`) and a specialized data-retrieval tool (`tools/tool_fetch_hl_raw.py`) that can annotate market data for strategy exploration.
+Effective Market Evaluation and Rigorous Analysis for Logical Decisions (EMERALD) is a LangChain-driven command-line assistant focused on Hyperliquid perpetuals. The project combines a lightweight agent wrapper (`agent/agent.py`) and a specialized data-retrieval tool (`tools/tool_fetch_hl_raw.py`) that can annotate market data for strategy exploration.
 
 - **Agent** – orchestrates prompts, model configuration, and tool wiring so that interacting with Hyperliquid feels like chatting with a trading assistant.
 - **Tool** – contacts Hyperliquid’s API, normalizes the candle data, and can optionally annotate it with significant swing points and ICT-style Fair Value Gaps (FVGs).
