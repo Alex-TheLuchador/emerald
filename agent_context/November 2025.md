@@ -73,19 +73,16 @@ Biases:
 
 <!-- meta: tag=journal, tag=all_trades, date=2025-11-04-->
 ### Trades
-| Trade                   | Crypto | Entry                               | Exit     | Direction | PnL       |
-| ----------------------- | ------ | ----------------------------------- | -------- | --------- | --------- |
-| 1                       | ETH    | $3,489.6                            | $3,502.2 | Short     | -$2.41    |
-| 2                       | ETH    | $3,496.2                            | $3,473.0 | Short     | $4.88     |
-| 3                       | ETH    | $3,391.0                            | $3,406.9 | Short     | -$4.98    |
-| 4                       | ETH    | $3,267.4 & $3,278.1 (avg: $3,272.4) | $3,245.9 | Short     | $5.50     |
-| 5 (Open Position)       | ETH    | $3,345.0                            | —        | Long      | -$5.58    |
-| **TOTAL (Closed Only)** |        |                                     |          |           | **-$2.59** |
+| Trade                  | Crypto | Entry    | Exit     | Direction | PnL                     |
+| ---------------------- | ------ | -------- | -------- | --------- | ----------------------- |
+| 1                      | ETH    | $3,489.6 | $3,502.2 | Short     | $-2.41                  |
+| 2                      | ETH    | $3,496.2 | $3,473.0 | Short     | $4.88                   |
+| 3                      | ETH    | $3,391.0 | $3,406.9 | Short     | -$4.98                  |
+| 4                      | ETH    | $3,278.1 | $3,245.9 | Short     | $5.50                   |
+| <strong>TOTAL</strong> |        |          |          |           | <strong>$2.99</strong> |
 
-
-
-<!-- meta: tag=journal, date=2025-11-04, trade=2, coin=ETH -->
-### Trade 2 Review
+<!-- meta: tag=journal, date=2025-11-04, trade=1, coin=ETH -->
+### Trade 1 Review
 I entered short because ETH doesn't have a close liquidity pool below, so I expected it to continue falling
 
 The trade was profitable (thank God) and this one really had all the strengths aligned:
@@ -93,16 +90,3 @@ The trade was profitable (thank God) and this one really had all the strengths a
 - 1h dealing range was clear, price was in a premium and I went short just before it entered discount range. 
 
 Not the cleanest entry, but we still got a lot of good things from this trade.
-
-<!-- meta: tag=journal, date=2025-11-04, trade=1, trade=3, trade=4, coin=ETH -->
-### Trades 1, 3, 4 Review
-I honestly don't remember much here. I know the losses were because I just didn't hold long enough, exiting early because I thought it'd reverse. The winning trade was a solid case of me spotting the liquidity below, seeing the pullback into premium and entering there.
-
-<!-- meta: tag=journal, date=2025-11-04, trade=2, coin=ETH -->
-### Trade 5 Review
-I entered long after seeing the solid rejection after barely missing the bottom of a FVG on the weekly chart, plus a 4h FVG is above, serving as the nearest draw on liquidity after it recently took out another weekly SSL level.
-
-(Update)
-Well, price broke the bullish structure it had heading into the 4h FVG. Perhaps that was just a bad trade on my part. Should have been looking for shorts still.
-
-This was a learning day for sure. Well, more of a *learning to overcome myself* day.
