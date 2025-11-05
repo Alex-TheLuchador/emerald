@@ -109,10 +109,10 @@ The context manager in `tools/context_manager.py` parses every `*.md` file under
 - Journal entries can be filtered by `date` or `coin`, making it easy to review only the trades you care about.
 
 Utilities baked into the manager:
-- `get_core_context()` � returns all core sections (personality, mindset).
-- `get_context_menu()` � prints a menu of available metadata values.
-- `search_content("liquidity")` � simple keyword search across indexed sections.
-- `get_stats()` � number of sections, total characters, and metadata coverage (shown during CLI startup).
+- `get_core_context()` returns all core sections (personality, mindset).
+- `get_context_menu()` prints a menu of available metadata values.
+- `search_content("liquidity")` simple keyword search across indexed sections.
+- `get_stats()` number of sections, total characters, and metadata coverage (shown during CLI startup).
 
 ---
 
