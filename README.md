@@ -135,9 +135,6 @@ tools/
 
 ---
 
-## Tips & Next Steps
-
-- Extend the context library with more tagged sections (e.g., `<!-- meta: timeframe=5m, concept=execution -->`).
-- Record new trade journals in dated files so you can query by week or coin.
-- Consider adding tests or smoke scripts for the context manager if you expand the metadata schema.
-- Keep an eye on token usage; the current design already minimizes prompt size, but summaries or embeddings could further optimize long-term costs.
+## To-do
+1. Implement logging
+2. Add smoke test(s)

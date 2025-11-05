@@ -6,11 +6,21 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import requests
 from langchain.tools import tool
 
-
-URL = "https://api.hyperliquid.xyz/info"
-HEADERS = {"Content-Type": "application/json"}
+# Import configuration
+import sys
 BASE_DIR = Path(__file__).resolve().parent.parent
-DEFAULT_OUTPUT_DIR = BASE_DIR / "agent_outputs"
+if str(BASE_DIR) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR))
+
+from config.settings import (
+    INTERVAL_CONSTRAINTS,
+    TOOL_CONFIG,
+    get_interval_constraint,
+)
+
+
+DEFAULT_OUTPUT_DIR = BASE_DIR / TOOL_CONFIG.default_output_subdir
+HEADERS = {"Content-Type": "application/json"}
 
 
 # --------------------
@@ -33,7 +43,7 @@ def fetch_hl_raw(
     interval: str,
     hours: int,
     limit: int,
-    url: str = URL,
+    url: str = None,
     out: Optional[str] = None,
     convert: bool = False,
     significant_swings: bool = False,
@@ -46,7 +56,7 @@ def fetch_hl_raw(
         interval: The candle interval (e.g., "1m", "5m", "15m", "1h", "4h", "1d").
         hours: Lookback period in hours.
         limit: Maximum number of candles to fetch. 250 at most.
-        url: The Hyperliquid API endpoint URL. This defaults to "https://api.hyperliquid.xyz/info".
+        url: The Hyperliquid API endpoint URL. Defaults to config value.
         out: Optional file path to write output.
         convert: Whether to convert raw to human-usable candles.
         significant_swings: Whether to annotate output with significant swing highs/lows.
@@ -54,8 +64,56 @@ def fetch_hl_raw(
     Returns:
         A tuple of (HTTP status code, metadata dict containing raw/final payload and optional output info).
     """
+    # Use config default if url not provided
+    if url is None:
+        url = TOOL_CONFIG.api_url
+    
+    # Validate interval and get constraints
+    try:
+        constraints = get_interval_constraint(interval)
+    except ValueError as e:
+        return 400, {
+            "error": str(e),
+            "raw": None,
+            "converted": None,
+            "annotated": None,
+            "final": None,
+            "saved_to": None,
+        }
+    
+    # Validate lookback hours against constraint
+    if hours > constraints.max_lookback_hours:
+        return 400, {
+            "error": (
+                f"Configuration error: {interval} interval is limited to "
+                f"{constraints.max_lookback_hours} hours lookback. "
+                f"You requested {hours} hours. "
+                f"Please reduce the lookback period."
+            ),
+            "raw": None,
+            "converted": None,
+            "annotated": None,
+            "final": None,
+            "saved_to": None,
+        }
+    
+    # Validate limit against constraint
+    if limit > constraints.max_candles:
+        return 400, {
+            "error": (
+                f"Configuration error: Maximum {constraints.max_candles} candles allowed. "
+                f"You requested {limit} candles. "
+                f"Please reduce the limit."
+            ),
+            "raw": None,
+            "converted": None,
+            "annotated": None,
+            "final": None,
+            "saved_to": None,
+        }
+    
     now_ms = int(datetime.now(tz=timezone.utc).timestamp() * 1000)
-    interval_mins = {"1m": 1, "5m": 5, "15m": 15, "1h": 60, "4h": 240, "1d": 1440}.get(interval.lower(), 60)
+    interval_mins = constraints.interval_minutes
     start_ms_from_hours = now_ms - int(hours) * 3_600_000
     start_ms_from_limit = now_ms - int(limit) * interval_mins * 60_000
     start_ms = min(start_ms_from_hours, start_ms_from_limit)
@@ -71,8 +129,19 @@ def fetch_hl_raw(
         },
     }
 
-    r = requests.post(url, json=payload, headers=HEADERS, timeout=15)
-    status = r.status_code
+    try:
+        r = requests.post(url, json=payload, headers=HEADERS, timeout=TOOL_CONFIG.request_timeout)
+        status = r.status_code
+    except requests.exceptions.RequestException as e:
+        return 500, {
+            "error": f"Network error: {str(e)}",
+            "raw": None,
+            "converted": None,
+            "annotated": None,
+            "final": None,
+            "saved_to": None,
+        }
+    
     try:
         body = r.json()
     except Exception:
@@ -100,11 +169,15 @@ def fetch_hl_raw(
             text_to_write = json.dumps(final_payload, indent=2)
         else:
             text_to_write = str(final_payload)
-        output_path.write_text(text_to_write, encoding="utf-8")
         try:
-            saved_path = str(output_path.relative_to(BASE_DIR))
-        except ValueError:
-            saved_path = str(output_path)
+            output_path.write_text(text_to_write, encoding="utf-8")
+            try:
+                saved_path = str(output_path.relative_to(BASE_DIR))
+            except ValueError:
+                saved_path = str(output_path)
+        except Exception as e:
+            # Non-fatal: log the failure but continue
+            saved_path = f"Failed to write: {str(e)}"
 
     return status, {
         "raw": body,
@@ -143,7 +216,7 @@ def parse_raw_keep_ohlc(raw_root: Union[Dict[str, Any], List[Any], str]) -> List
         except Exception:
             continue
     out.sort(key=lambda x: x["t"])  # oldest -> newest
-    return out[-250:]
+    return out[-TOOL_CONFIG.max_candles_absolute:]
 
 
 def convert_to_human(candles_raw: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -160,7 +233,7 @@ def convert_to_human(candles_raw: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return out
 
 
-def compute_three_candle_swings_raw(candles: List[Dict[str, Any]]):
+def compute_three_candle_swings_raw(candles: List[Dict[str, Any]]) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     sh: List[Dict[str, Any]] = []
     sl: List[Dict[str, Any]] = []
     for i in range(1, len(candles) - 1):
@@ -261,7 +334,7 @@ def main():
     p.add_argument("--interval", default="1h")
     p.add_argument("--hours", type=int, default=72)
     p.add_argument("--limit", type=int, default=250)
-    p.add_argument("--url", default=URL)
+    p.add_argument("--url", default=None)
     p.add_argument("--out", default=None, help="Optional file path to write output (annotated/converted/raw)")
     p.add_argument("--convert", action="store_true", help="Convert raw to human-usable candles and print")
     p.add_argument("--significant-swings", action="store_true", help="Annotate output with significant swing highs/lows")
@@ -286,11 +359,16 @@ def main():
     converted = result.get("converted")
     annotated = result.get("annotated")
     saved_to = result.get("saved_to")
+    error = result.get("error")
 
     def _pretty(val: Union[str, Dict[str, Any], List[Any]]) -> str:
         if isinstance(val, (dict, list)):
             return json.dumps(val, indent=2)
         return str(val)
+
+    if error:
+        print(f"\nError: {error}")
+        return
 
     print("Raw response body:")
     print(_pretty(raw_body))
@@ -306,7 +384,6 @@ def main():
     if saved_to:
         print(f"\nSaved output to {saved_to}")
     elif args.out:
-        # If save failed, communicate path attempted
         print(f"\nWarning: Failed to persist output to {args.out}")
 
 
