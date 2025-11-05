@@ -90,3 +90,13 @@ The trade was profitable (thank God) and this one really had all the strengths a
 - 1h dealing range was clear, price was in a premium and I went short just before it entered discount range. 
 
 Not the cleanest entry, but we still got a lot of good things from this trade.
+
+### Trades 1, 3, 4 Review
+I honestly don't remember much here. I know the losses were because I just didn't hold long enough, exiting early because I thought it'd reverse. The winning trade was a solid case of me spotting the liquidity below, seeing the pullback into premium and entering there.
+
+Trade 5 Review
+I entered long after seeing the solid rejection after barely missing the bottom of a FVG on the weekly chart, plus a 4h FVG is above, serving as the nearest draw on liquidity after it recently took out another weekly SSL level.
+
+(Update) Well, price broke the bullish structure it had heading into the 4h FVG. Perhaps that was just a bad trade on my part. Should have been looking for shorts still.
+
+This was a learning day for sure. Well, more of a learning to overcome myself day.
