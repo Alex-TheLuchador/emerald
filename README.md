@@ -142,3 +142,4 @@ tools/
 ## Desired Features
 - Agent should have more data to work with, but still should align with my trading principles.
 - Glassnode and X API free tiers could be used. 
+- Make sure agent knows to consider BSL/SSL as taken if price has since surpassed those levels - it should not list those levels as liquidity pools anymore.

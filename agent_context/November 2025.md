@@ -73,12 +73,12 @@ Biases:
 
 <!-- meta: tag=journal, tag=all_trades, date=2025-11-04-->
 ### Trades
-| Trade                  | Crypto | Entry    | Exit     | Direction | PnL                     |
-| ---------------------- | ------ | -------- | -------- | --------- | ----------------------- |
-| 1                      | ETH    | $3,489.6 | $3,502.2 | Short     | $-2.41                  |
-| 2                      | ETH    | $3,496.2 | $3,473.0 | Short     | $4.88                   |
-| 3                      | ETH    | $3,391.0 | $3,406.9 | Short     | -$4.98                  |
-| 4                      | ETH    | $3,278.1 | $3,245.9 | Short     | $5.50                   |
+| Trade                  | Crypto | Entry    | Exit     | Direction | PnL                    |
+| ---------------------- | ------ | -------- | -------- | --------- | ---------------------- |
+| 1                      | ETH    | $3,489.6 | $3,502.2 | Short     | $-2.41                 |
+| 2                      | ETH    | $3,496.2 | $3,473.0 | Short     | $4.88                  |
+| 3                      | ETH    | $3,391.0 | $3,406.9 | Short     | -$4.98                 |
+| 4                      | ETH    | $3,278.1 | $3,245.9 | Short     | $5.50                  |
 | <strong>TOTAL</strong> |        |          |          |           | <strong>$2.99</strong> |
 
 <!-- meta: tag=journal, date=2025-11-04, trade=1, coin=ETH -->
@@ -100,3 +100,34 @@ I entered long after seeing the solid rejection after barely missing the bottom 
 (Update) Well, price broke the bullish structure it had heading into the 4h FVG. Perhaps that was just a bad trade on my part. Should have been looking for shorts still.
 
 This was a learning day for sure. Well, more of a learning to overcome myself day.
+
+<hr>
+
+<!-- meta: tag=journal, date=2025-11-06 -->
+## November 6
+
+Time of writing: 14:09 UTC
+
+### ETH
+Biases:
+1. Daily
+    - Bearish
+2. 4h
+    - Bearish
+3. 1h
+    - Bearish
+
+<strong>Overall Bias: Bearish</strong>
+
+<!-- meta: tag=journal, tag=all_trades, date=2025-11-06-->
+### Trades
+| Trade                  | Crypto | Entry    | Exit     | Direction | PnL                |
+| ---------------------- | ------ | -------- | -------- | --------- | ------------------ |
+| 1                      | ETH    | $3,380.7 | $3,318.5 | Short     | $                  |
+| <strong>TOTAL</strong> |        |          |          |           | <strong>$</strong> |
+
+<!-- meta: tag=journal, date=2025-11-06, trade=1, coin=ETH -->
+### Trade 1 Review
+I entered short because all HTFs align, and price showed resistance pushing upwards towards the recent Daily FVG (which remains unfilled).
+
+Once I established the dealing range and saw another FVG on the 1h chart, price failed to push into the 1h FVG so I entered while it was still at a premium.
