@@ -125,6 +125,7 @@ Biases:
 | Trade                  | Crypto | Entry    | Exit     | Direction | PnL                |
 | ---------------------- | ------ | -------- | -------- | --------- | ------------------ |
 | 1                      | ETH    | $3,380.7 | $3,338.7 | Short     | $5.70              |
+| 2                      | HYPE   | $3.7     | $38.7    | Short     | $5.70              |
 | <strong>TOTAL</strong> |        |          |          |           | <strong>$</strong> |
 
 <!-- meta: tag=journal, date=2025-11-06, trade=1, coin=ETH -->
