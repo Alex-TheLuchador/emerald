@@ -138,3 +138,6 @@ tools/
 ## To-do
 1. Implement logging
 2. Add smoke test(s)
+
+## Desired Features
+- Agent should have more data to work with, but still should align with my trading principles.
