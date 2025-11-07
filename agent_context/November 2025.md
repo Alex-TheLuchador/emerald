@@ -122,11 +122,11 @@ Biases:
 
 <!-- meta: tag=journal, tag=all_trades, date=2025-11-06-->
 ### Trades
-| Trade                  | Crypto | Entry    | Exit     | Direction | PnL                |
-| ---------------------- | ------ | -------- | -------- | --------- | ------------------ |
-| 1                      | ETH    | $3,380.7 | $3,338.7 | Short     | $5.70              |
-| 2                      | HYPE   | $3.7     | $38.7    | Short     | $5.70              |
-| <strong>TOTAL</strong> |        |          |          |           | <strong>$</strong> |
+| Trade                  | Crypto | Entry    | Exit     | Direction | PnL                     |
+| ---------------------- | ------ | -------- | -------- | --------- | ----------------------- |
+| 1                      | ETH    | $3,380.7 | $3,338.7 | Short     | $5.70                   |
+| 2                      | HYPE   | $39.716  | $37.641  | Short     | $29.52                  |
+| <strong>TOTAL</strong> |        |          |          |           | <strong>$35.22</strong> |
 
 <!-- meta: tag=journal, date=2025-11-06, trade=1, coin=ETH -->
 ### Trade 1 Review
@@ -135,3 +135,5 @@ I entered short because all HTFs align, and price showed resistance pushing upwa
 Once I established the dealing range and saw another FVG on the 1h chart, price failed to push into the 1h FVG so I entered while it was still at a premium.
 
 (Update) So yet again I ended up closing the trade early for profit. It was close to my TP level and I saw price being very indecisive, so I took profits right there for a decent gain. Not a bad play, but I do have paper hands right now. I've got to train that bad habit out of me.
+
+### Trade 2 Review
