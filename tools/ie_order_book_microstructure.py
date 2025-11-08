@@ -48,12 +48,40 @@ def _fetch_order_book_snapshot(coin: str, depth: int = 20) -> Dict[str, Any]:
     if not levels or len(levels) < 2:
         return {"error": "Invalid order book data"}
 
-    bids = levels[0][:depth]  # Top N bids
-    asks = levels[1][:depth]  # Top N asks
+    bids_raw = levels[0][:depth]  # Top N bids
+    asks_raw = levels[1][:depth]  # Top N asks
+
+    # Parse bids - handle both dict and list formats
+    bids = []
+    for level in bids_raw:
+        if isinstance(level, dict):
+            price = float(level.get("px", 0))
+            size = float(level.get("sz", 0))
+        elif isinstance(level, (list, tuple)) and len(level) >= 2:
+            price = float(level[0])
+            size = float(level[1])
+        else:
+            continue
+        if price > 0 and size > 0:
+            bids.append([price, size])
+
+    # Parse asks - handle both dict and list formats
+    asks = []
+    for level in asks_raw:
+        if isinstance(level, dict):
+            price = float(level.get("px", 0))
+            size = float(level.get("sz", 0))
+        elif isinstance(level, (list, tuple)) and len(level) >= 2:
+            price = float(level[0])
+            size = float(level[1])
+        else:
+            continue
+        if price > 0 and size > 0:
+            asks.append([price, size])
 
     return {
-        "bids": [[float(p), float(s)] for p, s, _ in bids],  # [price, size, n_orders]
-        "asks": [[float(p), float(s)] for p, s, _ in asks],  # [price, size, n_orders]
+        "bids": bids,
+        "asks": asks,
         "timestamp": datetime.now(tz=timezone.utc).timestamp()
     }
 
