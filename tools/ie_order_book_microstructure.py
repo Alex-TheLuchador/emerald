@@ -52,8 +52,8 @@ def _fetch_order_book_snapshot(coin: str, depth: int = 20) -> Dict[str, Any]:
     asks = levels[1][:depth]  # Top N asks
 
     return {
-        "bids": [[float(p), float(s)] for p, s in bids],  # [price, size]
-        "asks": [[float(p), float(s)] for p, s in asks],
+        "bids": [[float(p), float(s)] for p, s, _ in bids],  # [price, size, n_orders]
+        "asks": [[float(p), float(s)] for p, s, _ in asks],  # [price, size, n_orders]
         "timestamp": datetime.now(tz=timezone.utc).timestamp()
     }
 
