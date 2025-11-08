@@ -131,6 +131,88 @@ class AgentConfig:
     """Maximum retry attempts for model calls."""
 
 
+# Institutional Engine (IE) configuration
+@dataclass
+class IEConfig:
+    """Configuration for Institutional Engine tools."""
+
+    # Cache TTLs (time-to-live in seconds)
+    order_book_cache_ttl: int = 2
+    """Order book cache TTL (2 seconds - data changes rapidly)."""
+
+    funding_cache_ttl: int = 300
+    """Funding rate cache TTL (5 minutes - changes every 8 hours)."""
+
+    oi_cache_ttl: int = 300
+    """Open interest cache TTL (5 minutes)."""
+
+    # Order book settings
+    default_order_book_depth: int = 10
+    """Default number of order book levels to analyze."""
+
+    max_order_book_depth: int = 20
+    """Maximum order book depth allowed."""
+
+    # Imbalance thresholds
+    strong_imbalance_threshold: float = 0.4
+    """Threshold for strong bid/ask pressure (absolute value)."""
+
+    moderate_imbalance_threshold: float = 0.2
+    """Threshold for moderate bid/ask pressure (absolute value)."""
+
+    # Funding rate thresholds
+    extreme_funding_threshold_pct: float = 10.0
+    """Annualized funding rate threshold for extreme (%)."""
+
+    high_funding_threshold_pct: float = 5.0
+    """Annualized funding rate threshold for high (%)."""
+
+    # VWAP/z-score thresholds
+    extreme_z_score: float = 2.0
+    """Z-score threshold for extreme deviation."""
+
+    high_z_score: float = 1.5
+    """Z-score threshold for high deviation."""
+
+    moderate_z_score: float = 1.0
+    """Z-score threshold for moderate deviation."""
+
+    # OI divergence threshold
+    oi_divergence_threshold_pct: float = 1.5
+    """Minimum % change to consider significant for OI/price divergence."""
+
+    # Volume thresholds
+    high_volume_ratio: float = 1.5
+    """Volume ratio threshold for high volume (vs average)."""
+
+    very_high_volume_ratio: float = 2.0
+    """Volume ratio threshold for very high volume (vs average)."""
+
+    # Convergence scoring weights
+    order_book_weight: int = 25
+    """Points awarded for order book signal in convergence score."""
+
+    funding_weight: int = 20
+    """Points awarded for funding signal in convergence score."""
+
+    oi_weight: int = 30
+    """Points awarded for OI divergence signal in convergence score."""
+
+    vwap_weight: int = 25
+    """Points awarded for VWAP signal in convergence score."""
+
+    # Setup grading thresholds
+    a_plus_threshold: int = 70
+    """Convergence score threshold for A+ grade."""
+
+    a_threshold: int = 50
+    """Convergence score threshold for A grade."""
+
+    b_threshold: int = 30
+    """Convergence score threshold for B grade."""
+
+
 # Global instances - import these in your code
 TOOL_CONFIG = ToolConfig()
 AGENT_CONFIG = AgentConfig()
+IE_CONFIG = IEConfig()
