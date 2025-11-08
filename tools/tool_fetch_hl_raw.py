@@ -18,6 +18,14 @@ from config.settings import (
     get_interval_constraint,
 )
 
+# Import IE calculation functions
+from ie.calculations import (
+    calculate_vwap,
+    calculate_z_score,
+    calculate_volume_ratio,
+    calculate_vwap_bands,
+)
+
 
 DEFAULT_OUTPUT_DIR = BASE_DIR / TOOL_CONFIG.default_output_subdir
 HEADERS = {"Content-Type": "application/json"}
@@ -48,9 +56,10 @@ def fetch_hl_raw(
     convert: bool = False,
     significant_swings: bool = False,
     fvg: bool = False,
+    include_vwap: bool = False,
 ) -> Tuple[int, Dict[str, Any]]:
     """Fetch raw candle data from Hyperliquid API.
-    
+
     Args:
         coin: The coin symbol (e.g., "BTC").
         interval: The candle interval (e.g., "1m", "5m", "15m", "1h", "4h", "1d").
@@ -61,6 +70,7 @@ def fetch_hl_raw(
         convert: Whether to convert raw to human-usable candles.
         significant_swings: Whether to annotate output with significant swing highs/lows.
         fvg: Whether to annotate output with Fair Value Gaps and size.
+        include_vwap: Whether to add VWAP analysis and quantitative metrics (NEW for IE).
     Returns:
         A tuple of (HTTP status code, metadata dict containing raw/final payload and optional output info).
     """
@@ -154,8 +164,8 @@ def fetch_hl_raw(
     if convert and parsed_candles:
         converted = convert_to_human(parsed_candles)
 
-    if (significant_swings or fvg) and parsed_candles:
-        annotated = annotate_candles(parsed_candles, include_swings=significant_swings, include_fvg=fvg)
+    if (significant_swings or fvg or include_vwap) and parsed_candles:
+        annotated = annotate_candles(parsed_candles, include_swings=significant_swings, include_fvg=fvg, include_vwap=include_vwap)
 
     final_payload: Union[str, Dict[str, Any], List[Any]] = annotated or converted or body
 
@@ -289,7 +299,7 @@ def detect_fvgs_raw(candles: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return fvgs
 
 
-def annotate_candles(candles_raw: List[Dict[str, Any]], include_swings: bool, include_fvg: bool) -> List[Dict[str, Any]]:
+def annotate_candles(candles_raw: List[Dict[str, Any]], include_swings: bool, include_fvg: bool, include_vwap: bool = False) -> List[Dict[str, Any]]:
     annotations: Dict[int, Dict[str, Any]] = {i: {} for i in range(len(candles_raw))}
 
     if include_swings:
@@ -311,6 +321,49 @@ def annotate_candles(candles_raw: List[Dict[str, Any]], include_swings: bool, in
                 "size": f["size"],
             }
 
+    # NEW: Add VWAP analysis (IE integration)
+    vwap_metrics = None
+    if include_vwap and candles_raw:
+        # Convert to format expected by calculate_vwap
+        candles_for_vwap = []
+        for c in candles_raw:
+            candles_for_vwap.append({
+                "high": _to_num(c["h"]),
+                "low": _to_num(c["l"]),
+                "close": _to_num(c["c"]),
+                "volume": _to_num(c.get("v", 0)),
+            })
+
+        # Calculate VWAP
+        vwap_price = calculate_vwap(candles_for_vwap)
+
+        # Get current price (latest close)
+        current_price = _to_num(candles_raw[-1]["c"])
+
+        # Calculate z-score
+        prices = [_to_num(c["c"]) for c in candles_raw]
+        z_score, std_dev, deviation_level = calculate_z_score(current_price, prices)
+
+        # Calculate VWAP bands
+        bands = calculate_vwap_bands(vwap_price, std_dev)
+
+        # Calculate volume ratio
+        volumes = [_to_num(c.get("v", 0)) for c in candles_raw]
+        current_volume = volumes[-1] if volumes else 0
+        volume_ratio, avg_volume, volume_significance = calculate_volume_ratio(current_volume, volumes[:-1], lookback=min(20, len(volumes)-1))
+
+        vwap_metrics = {
+            "vwap": round(vwap_price, 2),
+            "current_price": round(current_price, 2),
+            "deviation_pct": round(((current_price - vwap_price) / vwap_price * 100), 2),
+            "z_score": round(z_score, 2),
+            "deviation_level": deviation_level,
+            "std_dev": round(std_dev, 2),
+            "bands": {k: round(v, 2) for k, v in bands.items()},
+            "volume_ratio": round(volume_ratio, 2),
+            "volume_significance": volume_significance,
+        }
+
     out: List[Dict[str, Any]] = []
     for i, c in enumerate(candles_raw):
         entry = {
@@ -324,12 +377,17 @@ def annotate_candles(candles_raw: List[Dict[str, Any]], include_swings: bool, in
         if c.get("v") is not None:
             entry["v"] = c["v"]
         entry.update(annotations.get(i, {}))
+
+        # Add VWAP metrics to the last candle only
+        if include_vwap and vwap_metrics and i == len(candles_raw) - 1:
+            entry["vwap_analysis"] = vwap_metrics
+
         out.append(entry)
     return out
 
 
 def main():
-    p = argparse.ArgumentParser(description="Standalone HL fetcher with optional convert and per-candle annotations (significant swings, FVGs)")
+    p = argparse.ArgumentParser(description="Standalone HL fetcher with optional convert and per-candle annotations (significant swings, FVGs, VWAP)")
     p.add_argument("--coin", default="BTC")
     p.add_argument("--interval", default="1h")
     p.add_argument("--hours", type=int, default=72)
@@ -339,6 +397,7 @@ def main():
     p.add_argument("--convert", action="store_true", help="Convert raw to human-usable candles and print")
     p.add_argument("--significant-swings", action="store_true", help="Annotate output with significant swing highs/lows")
     p.add_argument("--fvg", action="store_true", help="Annotate output with Fair Value Gaps and size")
+    p.add_argument("--include-vwap", action="store_true", help="Include VWAP analysis and quantitative metrics (IE)")
     args = p.parse_args()
 
     status, result = fetch_hl_raw(
@@ -351,6 +410,7 @@ def main():
         convert=args.convert,
         significant_swings=args.significant_swings,
         fvg=args.fvg,
+        include_vwap=args.include_vwap,
     )
     print(f"Status: {status}")
 

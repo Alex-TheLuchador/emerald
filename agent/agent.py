@@ -18,7 +18,8 @@ if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
 from tools.tool_fetch_hl_raw import fetch_hl_raw
-from config.settings import AGENT_CONFIG, generate_constraint_text
+from tools.ie_fetch_institutional_metrics import fetch_institutional_metrics_tool
+from config.settings import AGENT_CONFIG, IE_CONFIG, generate_constraint_text
 from memory.session_manager import SessionManager
 
 
@@ -90,6 +91,30 @@ Standard settings for every call:
   - convert=True (for human-readable output)
   - significant_swings=True (always annotate swings)
   - fvg=True (always annotate Fair Value Gaps)
+  - include_vwap=True (NEW: adds VWAP analysis and z-scores)
+
+Tool Usage (fetch_institutional_metrics_tool):
+This tool provides quantitative validation of ICT setups. Use AFTER identifying an ICT pattern.
+
+Required parameters (confirm if missing):
+  - coin: Symbol (e.g., "BTC")
+
+Optional parameters:
+  - include_order_book: True (default)
+  - include_funding: True (default)
+  - include_oi: True (default)
+
+Returns:
+  - Order book imbalance (bid/ask pressure)
+  - Funding rate (sentiment extremes)
+  - Open interest divergence (smart money tracking)
+  - Summary with convergence score and recommendation
+
+Analysis Workflow:
+1. Start with ICT analysis using fetch_hl_raw (structure, FVGs, liquidity)
+2. THEN validate with fetch_institutional_metrics_tool (quantitative metrics)
+3. Grade setup based on convergence (A+/A/B/C) per Quantitative Metrics Guide
+4. Provide BOTH ICT reasoning AND quantitative support in your response
 
 Configuration Limits:
 {LOOKBACK_CONSTRAINTS}
@@ -103,8 +128,10 @@ Example: "You've requested 5 hours of 1m data, but 1m intervals are limited to 1
 
 Mission:
 - Fetch and analyze Hyperliquid perpetuals data
-- Identify profitable setups aligned with context document strategies
-- Provide clear trade ideas with reasoning based on the documented approach"""
+- Identify profitable setups aligned with context document strategies (ICT)
+- Validate setups with institutional-grade quantitative metrics (IE)
+- Grade setups (A+/A/B/C) based on ICT + quantitative convergence
+- Provide clear trade ideas with BOTH technical AND quantitative reasoning"""
 
 if CONTEXT_DOCUMENTS:
     SYSTEM_PROMPT = f"{SYSTEM_PROMPT_CORE}\n\n---\nContext Documents:\n{CONTEXT_DOCUMENTS}"
@@ -116,7 +143,7 @@ else:
 #---------------------------
 agent = create_agent(
     model=model,
-    tools=[fetch_hl_raw],
+    tools=[fetch_hl_raw, fetch_institutional_metrics_tool],
     system_prompt=SYSTEM_PROMPT,
 )
 

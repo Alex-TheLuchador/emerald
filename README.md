@@ -437,6 +437,538 @@ status, result = fetch_hl_raw(
 
 ---
 
+## Institutional Engine (IE)
+
+**File**: `ie/` directory + `tools/ie_fetch_*.py`
+
+The Institutional Engine is EMERALD's **quantitative metrics layer** that provides institutional-grade data to validate and grade ICT setups. Think of it as adding "what the big players see" to complement "where the big players will act."
+
+### The Problem IE Solves
+
+Traditional ICT analysis is powerful but subjective:
+- Market structure: Bullish or bearish? (Interpretation-based)
+- Liquidity pools: Where will price go? (Pattern-based)
+- FVGs and order blocks: Which ones matter? (Experience-based)
+
+IE adds **objective, quantitative validation**:
+- Order book imbalance: Are big players actually positioned for this move? (Data-based)
+- Funding rates: Is sentiment at an extreme? (Math-based)
+- Open interest divergence: Is smart money accumulating or distributing? (Observable)
+- VWAP analysis: Is price statistically stretched? (Statistical)
+
+### Architecture: Hybrid ICT + Quantitative
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         USER QUERY                               │
+│           "What's the BTC setup on 1H? Grade it."                │
+└────────────────────────┬────────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    AGENT ORCHESTRATION                           │
+│                                                                  │
+│  Step 1: ICT Analysis (fetch_hl_raw)                            │
+│  ┌────────────────────────────────────────────────────────┐    │
+│  │ • Market structure (HH/HL vs LL/LH)                    │    │
+│  │ • Swing highs/lows identification                      │    │
+│  │ • Fair Value Gaps (FVGs)                               │    │
+│  │ • Liquidity pools (previous highs/lows)               │    │
+│  │ • Discount/Premium zones                               │    │
+│  └────────────────────────────────────────────────────────┘    │
+│                         │                                        │
+│                         ▼                                        │
+│  Step 2: IE Quantitative Validation (fetch_institutional_metrics)│
+│  ┌────────────────────────────────────────────────────────┐    │
+│  │ Order Book Imbalance:                                  │    │
+│  │   • Bid/Ask pressure (-1 to +1 scale)                  │    │
+│  │   • Strength: strong/moderate/neutral                  │    │
+│  │                                                         │    │
+│  │ Funding Rate:                                          │    │
+│  │   • Current 8h rate → Annualized %                     │    │
+│  │   • Sentiment: extreme bearish/bullish/neutral         │    │
+│  │   • Trend: increasing/decreasing/stable                │    │
+│  │                                                         │    │
+│  │ Open Interest:                                         │    │
+│  │   • OI changes (1h, 4h, 24h)                          │    │
+│  │   • Price-OI divergence detection                      │    │
+│  │   • Smart money positioning                            │    │
+│  │                                                         │    │
+│  │ VWAP Analysis:                                         │    │
+│  │   • Z-score (statistical deviation)                    │    │
+│  │   • Deviation bands (±1σ, ±2σ)                        │    │
+│  │   • Volume ratio vs 20-period avg                      │    │
+│  └────────────────────────────────────────────────────────┘    │
+│                         │                                        │
+│                         ▼                                        │
+│  Step 3: Convergence Analysis                                   │
+│  ┌────────────────────────────────────────────────────────┐    │
+│  │ Convergence Score (0-100):                             │    │
+│  │   • Order book alignment with ICT bias: +25 pts        │    │
+│  │   • Funding at extreme supporting move: +20 pts        │    │
+│  │   • OI divergence confirming setup: +30 pts            │    │
+│  │   • VWAP statistical extreme: +25 pts                  │    │
+│  │                                                         │    │
+│  │ Setup Grade:                                           │    │
+│  │   • A+ (70-100): High conviction, all metrics aligned  │    │
+│  │   • A (50-69): Good setup, most metrics confirm        │    │
+│  │   • B (30-49): Acceptable, some confirmation           │    │
+│  │   • C (<30): Low confidence, avoid or small size       │    │
+│  └────────────────────────────────────────────────────────┘    │
+└────────────────────────┬────────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    GRADED TRADE SETUP                            │
+│                                                                  │
+│  **Grade: A+ (High Conviction)**                                │
+│                                                                  │
+│  **ICT Analysis**:                                              │
+│  - HTF Bias: Bearish (Daily LL/LH, 4H BOS down)                │
+│  - Price at premium (above 50% of 1H range)                     │
+│  - Swept buy-side liquidity at $68,000                          │
+│  - Bearish FVG created during displacement                      │
+│                                                                  │
+│  **Institutional Metrics (Convergence: 85/100)**:               │
+│  ✓ Order Book: Strong ask pressure (-0.6) → Confirms bearish   │
+│  ✓ Funding: +15% annualized (extreme bullish) → Squeeze ready  │
+│  ✓ OI: -8% while price +2% (bearish divergence) → Smart $ short│
+│  ✓ VWAP: +2.1σ above mean (extreme) → Statistical reversion    │
+│                                                                  │
+│  **Entry**: $67,800-67,900 (FVG + order block)                  │
+│  **Stop**: $68,200 (above swept high + buffer)                  │
+│  **Targets**:                                                    │
+│    - TP1: $67,200 (internal FVG, 50% off)                       │
+│    - TP2: $66,500 (PDL external liquidity, runner)             │
+│                                                                  │
+│  **Risk Management**: This is an A+ setup with quantitative     │
+│  confirmation. Full position size justified. All metrics align. │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### The Five Institutional Metrics
+
+#### 1. Order Book Imbalance
+
+**What it measures**: Real-time bid vs ask pressure in the L2 order book.
+
+**How institutions use it**:
+- Market makers monitor order book depth to gauge short-term pressure
+- Imbalances predict immediate directional moves (seconds to minutes)
+- Strong imbalance = one side about to get run over
+
+**Example**:
+```json
+{
+  "imbalance": -0.62,
+  "imbalance_strength": "strong_ask_pressure",
+  "total_bid_volume": 45.3,
+  "total_ask_volume": 118.7,
+  "spread_bps": 2.5
+}
+```
+
+**Interpretation**:
+- `-0.62` = Strong selling pressure (asks dominate)
+- If ICT shows bearish setup + order book confirms = **High conviction short**
+- If ICT shows bearish but order book is +0.5 (bid pressure) = **Conflicting signals, downgrade**
+
+#### 2. Funding Rate
+
+**What it measures**: Cost to hold perpetual positions (paid every 8 hours).
+
+**How institutions use it**:
+- Extreme positive funding = Too many longs, squeeze opportunity (short bias)
+- Extreme negative funding = Too many shorts, short squeeze opportunity (long bias)
+- Funding divergence from price = Sentiment exhaustion, reversal setup
+
+**Example**:
+```json
+{
+  "rate_8h": 0.0001,
+  "annualized_pct": 10.95,
+  "sentiment": "bullish",
+  "is_extreme": true,
+  "trend": "increasing"
+}
+```
+
+**Interpretation**:
+- `10.95%` annualized = Extremely bullish sentiment (threshold: 10%+)
+- If price at resistance + extreme funding = **Fade the crowd (short setup)**
+- If funding extreme but price breaking out = **Momentum continuation, avoid fade**
+
+#### 3. Open Interest Divergence
+
+**What it measures**: Relationship between OI changes and price movement.
+
+**How institutions use it**:
+- OI ↑ + Price ↑ = New longs entering (bullish, strong trend)
+- OI ↑ + Price ↓ = New shorts entering (bearish, strong trend)
+- OI ↓ + Price ↑ = Shorts covering (weak bullish, reversal soon)
+- OI ↓ + Price ↓ = Longs closing (weak bearish, reversal soon)
+
+**Example**:
+```json
+{
+  "current_usd": 125000000,
+  "change_4h_pct": -5.2,
+  "price_change_4h_pct": 2.1,
+  "divergence_type": "strong_bearish"
+}
+```
+
+**Interpretation**:
+- OI dropped 5.2% while price rose 2.1% = **Weak longs closing, bearish divergence**
+- If ICT shows liquidity sweep at resistance = **A+ short setup**
+- Smart money exiting longs = Trend exhaustion
+
+#### 4. VWAP Analysis
+
+**What it measures**: Volume-weighted average price + statistical deviation.
+
+**How institutions use it**:
+- VWAP = institutional benchmark (algos buy below, sell above)
+- Z-score shows statistical deviation (>2σ = extreme, mean reversion likely)
+- Volume ratio confirms move significance (high volume = strong conviction)
+
+**Example**:
+```json
+{
+  "vwap": 67500.0,
+  "current_price": 68100.0,
+  "z_score": 2.3,
+  "deviation_level": "extreme_above",
+  "volume_ratio": 1.8
+}
+```
+
+**Interpretation**:
+- Price $600 above VWAP, +2.3 standard deviations = **Statistical extreme**
+- Volume ratio 1.8x average = Move has conviction but stretched
+- If ICT shows premium + VWAP extreme = **High probability reversion (short)**
+
+#### 5. Volume Ratio
+
+**What it measures**: Current volume vs 20-period average.
+
+**How institutions use it**:
+- Breakouts with high volume (>1.5x) = Real moves, institutional participation
+- Breakouts with low volume (<0.8x) = Fake moves, retail-driven, fade them
+- Volume confirms conviction behind price action
+
+**Example**:
+```json
+{
+  "volume_ratio": 2.4,
+  "volume_significance": "very_high"
+}
+```
+
+**Interpretation**:
+- Volume 2.4x average = **Strong institutional participation**
+- If ICT shows FVG entry + high volume displacement = **A+ setup**
+- If ICT shows setup but volume ratio 0.6x = **C grade, skip it**
+
+### IE Tools
+
+**Primary Tool**: `fetch_institutional_metrics_tool`
+```python
+# Agent calls this to get all metrics at once
+result = fetch_institutional_metrics(
+    coin="BTC",
+    include_order_book=True,    # L2 book imbalance
+    include_funding=True,        # Funding rate analysis
+    include_oi=True,            # Open interest divergence
+    use_cache=True              # Respect TTL cache
+)
+
+# Returns:
+{
+    "coin": "BTC",
+    "timestamp": "2025-11-08T14:30:00Z",
+    "price": 67800.0,
+    "metrics": {
+        "order_book": {...},
+        "funding": {...},
+        "open_interest": {...},
+        "vwap": {...}
+    },
+    "summary": {
+        "convergence_score": 85,
+        "grade": "A+",
+        "recommendation": "high_conviction_short",
+        "reasoning": "All metrics aligned with bearish bias..."
+    }
+}
+```
+
+**Individual Tools** (for granular access):
+- `fetch_order_book_metrics` - L2 order book only
+- `fetch_funding_metrics` - Funding rate only
+- `fetch_open_interest_metrics` - OI divergence only
+
+**VWAP Integration**: Added to existing `fetch_hl_raw` tool:
+```python
+fetch_hl_raw(
+    coin="BTC",
+    interval="1h",
+    hours=24,
+    limit=50,
+    include_vwap=True,  # NEW: Adds VWAP metrics to last candle
+    ...
+)
+```
+
+### Caching Strategy
+
+IE uses intelligent caching to reduce API calls:
+
+```python
+# config/settings.py
+@dataclass
+class IEConfig:
+    order_book_cache_ttl: int = 2        # 2 seconds (real-time)
+    funding_cache_ttl: int = 300         # 5 minutes (changes every 8h)
+    oi_cache_ttl: int = 300             # 5 minutes (updates slowly)
+```
+
+**Why different TTLs**:
+- Order book: Changes every second, short cache (2s)
+- Funding: Only updates every 8 hours, longer cache (5min)
+- OI: Updates gradually, longer cache (5min)
+
+### Setup Grading System
+
+IE automatically grades setups based on convergence:
+
+```python
+# Scoring (max 100 points):
+Order Book Alignment:  25 points (imbalance matches ICT bias)
+Funding Extreme:       20 points (sentiment at reversal zone)
+OI Divergence:         30 points (smart money positioning)
+VWAP Statistical:      25 points (price at extreme deviation)
+
+# Grading thresholds:
+A+ (70-100):  High conviction - Full size, all metrics aligned
+A  (50-69):   Good setup - Standard size, most metrics confirm
+B  (30-49):   Acceptable - Reduced size, some confirmation
+C  (<30):     Low confidence - Skip or very small size
+```
+
+**Agent Response Format**:
+```markdown
+### BTC 1H Setup - Grade: A+ (Convergence: 85/100)
+
+**ICT Analysis**:
+- HTF Bias: Bearish
+- Location: Premium (above 50%)
+- Setup: Liquidity sweep + FVG
+
+**IE Validation** (85/100):
+✓ Order Book: -0.6 (strong ask pressure) → +25 pts
+✓ Funding: +12% annualized (extreme) → +20 pts
+✓ OI Divergence: Strong bearish → +30 pts
+✓ VWAP: +2.1σ above mean → +25 pts
+✗ Volume: 0.9x average → -15 pts
+
+**Recommendation**: HIGH CONVICTION SHORT
+All major metrics confirm bearish bias. This is an A+ setup.
+
+Entry: $67,800-67,900
+Stop: $68,200
+Target: $66,500
+```
+
+### Why IE Matters: Institutional-Level Trading
+
+Traditional retail approach:
+1. See chart pattern (subjective)
+2. Hope it works (emotional)
+3. No idea if "smart money" agrees (blind)
+4. 50/50 coin flip (gambling)
+
+**EMERALD + IE approach**:
+1. **ICT identifies the setup** (where institutions will act)
+2. **IE validates with data** (what institutions are actually doing)
+3. **Convergence scoring quantifies confidence** (objective grading)
+4. **Position sizing matches grade** (risk management)
+
+**Real example**:
+
+**Without IE**:
+```
+"BTC swept the low and created a bullish FVG. Long setup."
+Grade: ??? (subjective)
+```
+
+**With IE**:
+```
+"BTC swept the low and created a bullish FVG.
+
+IE Validation:
+- Order Book: Strong bid pressure (+0.7) ✓
+- Funding: -8% annualized (extreme bearish sentiment) ✓
+- OI: +12% while price -3% (bullish accumulation) ✓
+- VWAP: -1.9σ below mean (statistical extreme) ✓
+
+Convergence: 92/100
+Grade: A+ (High Conviction Long)
+
+This isn't just a pattern—it's confirmed by orderbook, funding,
+OI divergence, and statistical deviation. All systems aligned."
+```
+
+### Configuration
+
+All IE thresholds are configurable in `config/settings.py`:
+
+```python
+@dataclass
+class IEConfig:
+    # Cache TTLs
+    order_book_cache_ttl: int = 2
+    funding_cache_ttl: int = 300
+    oi_cache_ttl: int = 300
+
+    # Metric thresholds
+    strong_imbalance_threshold: float = 0.4    # |imbalance| > 0.4 = strong
+    extreme_funding_threshold_pct: float = 10.0  # >10% annualized = extreme
+    extreme_z_score: float = 2.0               # >2σ = statistical extreme
+
+    # Convergence weights
+    order_book_weight: int = 25
+    funding_weight: int = 20
+    oi_weight: int = 30
+    vwap_weight: int = 25
+
+    # Grading thresholds
+    a_plus_threshold: int = 70   # 70+ = A+
+    a_threshold: int = 50        # 50-69 = A
+    b_threshold: int = 30        # 30-49 = B
+    # <30 = C
+```
+
+### Agent Integration
+
+IE is seamlessly integrated into EMERALD's workflow:
+
+**Context Document**: `agent_context/Quantitative_Metrics_Guide.md`
+- 375-line comprehensive guide for the agent
+- Explains each metric and institutional usage
+- Defines convergence scoring methodology
+- Provides response format templates
+
+**System Prompt**: Agent automatically includes IE in analysis workflow
+```python
+# From agent/agent.py
+"""
+Analysis Workflow:
+1. Fetch ICT data (fetch_hl_raw)
+2. Fetch IE metrics (fetch_institutional_metrics_tool)
+3. Analyze convergence
+4. Grade setup (A+/A/B/C)
+5. Provide recommendation with reasoning
+"""
+```
+
+**Graceful Degradation**: If IE metrics fail (API issues), agent continues with ICT-only analysis:
+```
+⚠️ ICT analysis complete, but institutional metrics failed to load.
+Proceeding with pattern-based analysis only. Grade: Ungraded (ICT-only)
+```
+
+### Usage Examples
+
+**Example 1: Full Analysis with Grading**
+```bash
+python agent/agent.py "Analyze BTC 1H setup and grade it"
+```
+
+Agent will:
+1. Fetch ICT data (swings, FVGs, market structure)
+2. Fetch IE metrics (order book, funding, OI, VWAP)
+3. Calculate convergence score
+4. Assign grade (A+/A/B/C)
+5. Provide clear recommendation
+
+**Example 2: Multi-Coin Comparison**
+```bash
+python agent/agent.py "Compare BTC and ETH setups. Which has better confirmation?"
+```
+
+Agent analyzes both using IE, compares convergence scores, recommends higher-graded setup.
+
+**Example 3: Specific Metric Query**
+```bash
+python agent/agent.py "What's the order book imbalance on BTC right now?"
+```
+
+Agent fetches just order book metrics for quick answer.
+
+### Testing IE
+
+**Test individual fetchers**:
+```bash
+# Order book
+python tools/ie_fetch_order_book.py
+
+# Funding rate
+python tools/ie_fetch_funding.py
+
+# Open interest
+python tools/ie_fetch_open_interest.py
+```
+
+**Test unified metrics**:
+```bash
+python -c "
+from tools.ie_fetch_institutional_metrics import fetch_institutional_metrics
+import json
+result = fetch_institutional_metrics('BTC')
+print(json.dumps(result, indent=2))
+"
+```
+
+**Test agent integration**:
+```bash
+python agent/agent.py "Grade the current BTC 1H setup"
+```
+
+### IE File Structure
+
+```
+ie/
+├── __init__.py              # Module exports
+├── calculations.py          # Pure calculation functions
+├── data_models.py          # Dataclasses for all metrics
+├── cache.py                # Thread-safe TTL cache
+└── oi_history.json         # OI historical tracking (auto-created)
+
+tools/
+├── ie_fetch_order_book.py          # L2 order book fetcher
+├── ie_fetch_funding.py             # Funding rate fetcher
+├── ie_fetch_open_interest.py      # OI divergence fetcher
+└── ie_fetch_institutional_metrics.py  # Unified metrics tool
+
+agent_context/
+└── Quantitative_Metrics_Guide.md   # IE guide for agent (375 lines)
+```
+
+### The Bottom Line
+
+**Before IE**: EMERALD was a smart ICT pattern recognition system.
+
+**With IE**: EMERALD combines ICT pattern recognition with institutional-grade quantitative validation, providing:
+- **Objective grading** of subjective setups (A+/A/B/C)
+- **Convergence scoring** showing how many systems align (0-100)
+- **Data-backed confidence** instead of gut feelings
+- **Risk-appropriate sizing** based on setup grade
+
+This transforms EMERALD from a trading assistant into an **institutional-grade analysis system** that thinks like the big players, not just predicts where they'll act.
+
+---
+
 ## Context Management
 
 **Files**: 
