@@ -164,12 +164,26 @@ def _fetch_raw_oi(coin: str) -> Dict[str, Any]:
 
         # Find the specific coin
         for ctx in asset_ctxs:
-            if isinstance(ctx, dict) and ctx.get("coin") == coin:
-                return {
-                    "coin": coin,
-                    "oi": float(ctx.get("openInterest", 0)),
-                    "price": float(ctx.get("markPx", ctx.get("midPx", 0))),
-                }
+            if isinstance(ctx, dict):
+                # Try multiple possible field names for coin identification
+                coin_name = (ctx.get("coin") or ctx.get("symbol") or
+                            ctx.get("name") or ctx.get("asset") or "")
+
+                # Match coin (case-insensitive, handle different formats)
+                if coin_name.upper() == coin.upper() or coin_name.upper() == f"{coin.upper()}-USD":
+                    # Try multiple possible field names for OI
+                    oi = (ctx.get("openInterest") or ctx.get("open_interest") or
+                         ctx.get("oi") or ctx.get("openInt") or 0)
+
+                    # Try multiple possible field names for price
+                    price = (ctx.get("markPx") or ctx.get("midPx") or
+                            ctx.get("mark_price") or ctx.get("price") or 0)
+
+                    return {
+                        "coin": coin,
+                        "oi": float(oi),
+                        "price": float(price),
+                    }
 
         raise ValueError(f"Coin {coin} not found in API response")
 

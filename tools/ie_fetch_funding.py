@@ -68,9 +68,19 @@ def _fetch_raw_funding(coin: str, lookback_hours: int = 24) -> Dict[str, Any]:
             # meta_data[1] contains asset contexts
             asset_ctxs = meta_data[1]
             for ctx in asset_ctxs:
-                if isinstance(ctx, dict) and ctx.get("coin") == coin:
-                    current_funding = float(ctx.get("funding", 0))
-                    break
+                if isinstance(ctx, dict):
+                    # Try multiple possible field names for coin identification
+                    coin_name = (ctx.get("coin") or ctx.get("symbol") or
+                                ctx.get("name") or ctx.get("asset") or "")
+
+                    # Match coin (case-insensitive, handle different formats)
+                    if coin_name.upper() == coin.upper() or coin_name.upper() == f"{coin.upper()}-USD":
+                        # Try multiple possible field names for funding
+                        current_funding = (ctx.get("funding") or ctx.get("fundingRate") or
+                                         ctx.get("funding_rate") or ctx.get("prevFunding"))
+                        if current_funding is not None:
+                            current_funding = float(current_funding)
+                            break
 
         # Now get funding history
         history_payload = {
