@@ -50,17 +50,33 @@ EMERALD/
 │   └── settings.py             # All configuration (intervals, limits, etc.)
 ├── tools/
 │   ├── tool_fetch_hl_raw.py    # LangChain tool for fetching Hyperliquid data
-│   └── context_manager.py      # Context document loading system
+│   ├── context_manager.py      # Context document loading system
+│   ├── ie_fetch_order_book.py  # Order book metrics fetcher
+│   ├── ie_fetch_funding.py     # Funding rate metrics fetcher
+│   ├── ie_fetch_open_interest.py  # Open interest metrics fetcher
+│   └── ie_fetch_institutional_metrics.py  # Unified IE metrics tool
 ├── memory/
 │   ├── __init__.py
 │   └── session_manager.py      # Conversation persistence and session management
+├── ie/
+│   ├── __init__.py
+│   ├── calculations.py         # IE calculation functions
+│   ├── data_models.py          # IE data models
+│   ├── cache.py                # IE caching system
+│   └── oi_history.json         # OI history tracking (auto-created)
 ├── agent_context/
 │   ├── Mentality and Personality.md
-│   ├── Strategy.md
+│   ├── Quantitative_Metrics_Guide.md  # IE metrics guide for agent
 │   └── November 2025.md        # Trading journal
-├── agent_outputs/              # Generated data files
-├── conversations/              # Conversation session storage (gitignored)
+├── agent_outputs/              # Generated data files (auto-created)
+├── conversations/              # Conversation session storage (auto-created, gitignored)
 ├── requirements.txt            # Python dependencies
+├── demo_ie_usage.py            # IE demonstration script
+├── test_agent_with_ie.py       # Agent + IE integration tests
+├── test_ie_calculations.py     # IE calculation tests
+├── test_ie_fetchers.py         # IE fetcher tests
+├── diagnose_api.py             # API diagnostics
+└── diagnose_api_detailed.py    # Detailed API diagnostics
 ```
 
 ---
@@ -1496,18 +1512,27 @@ mkdir -p agent_context
 tree -L 2
 # Should show:
 # .
-# ├── agent.py
+# ├── agent/
+# │   └── agent.py
 # ├── config/
 # │   ├── __init__.py
 # │   └── settings.py
 # ├── tools/
 # │   ├── tool_fetch_hl_raw.py
-# │   └── context_manager.py
+# │   ├── context_manager.py
+# │   └── ie_fetch_*.py
+# ├── ie/
+# │   ├── __init__.py
+# │   └── *.py
+# ├── memory/
+# │   ├── __init__.py
+# │   └── session_manager.py
 # ├── agent_context/
 # │   ├── Mentality and Personality.md
-# │   ├── Strategy.md
+# │   ├── Quantitative_Metrics_Guide.md
 # │   └── November 2025.md
-# └── agent_outputs/
+# ├── agent_outputs/
+# └── conversations/
 ```
 
 ### Running the Agent
