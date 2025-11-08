@@ -5,3 +5,4 @@ __pycache__/
 *.pyc
 system_prompts.md
 .claude/
+Strategy.md
