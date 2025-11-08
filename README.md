@@ -61,7 +61,6 @@ EMERALD/
 ├── agent_outputs/              # Generated data files
 ├── conversations/              # Conversation session storage (gitignored)
 ├── requirements.txt            # Python dependencies
-└── MEMORY_GUIDE.md            # Complete memory system documentation
 ```
 
 ---
@@ -794,8 +793,6 @@ This is **Phase 1** of a 3-phase memory roadmap:
 
 - **Phase 2** (planned): SQLite storage, automatic summarization, enhanced metadata
 - **Phase 3** (future): Semantic search, interactive REPL, cross-session insights
-
-For complete documentation, see `MEMORY_GUIDE.md`.
 
 ---
 
