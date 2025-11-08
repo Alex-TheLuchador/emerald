@@ -1,5 +1,6 @@
 .env
 agent_outputs/
+conversations/
 __pycache__/
 *.pyc
 system_prompts.md
