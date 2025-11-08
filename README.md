@@ -15,8 +15,9 @@ A LangChain-powered AI trading assistant for analyzing Hyperliquid perpetuals ma
 5. [The Data Pipeline](#the-data-pipeline)
 6. [Context Management](#context-management)
 7. [The Agent](#the-agent)
-8. [Usage Examples](#usage-examples)
-9. [Setup & Installation](#setup--installation)
+8. [Conversation Memory](#conversation-memory)
+9. [Usage Examples](#usage-examples)
+10. [Setup & Installation](#setup--installation)
 
 ---
 
@@ -27,12 +28,14 @@ EMERALD is a trading assistant that:
 - Analyzes price action using swing structure, FVGs, and liquidity concepts
 - Provides trade ideas based on a documented strategy
 - Maintains a personality that balances analytical coldness with coaching warmth
+- **Remembers conversations** - Persistent memory across sessions for contextual discussions
 
-The system is built on three core pillars:
+The system is built on four core pillars:
 
 1. **Configuration** - Centralized settings for intervals, limits, and agent behavior
 2. **Tools** - Data fetching and technical analysis utilities
 3. **Context** - Trading strategy, mentality, and journal documents that guide the agent
+4. **Memory** - Session-based conversation persistence for multi-turn discussions
 
 ---
 
@@ -40,18 +43,25 @@ The system is built on three core pillars:
 
 ```
 EMERALD/
-├── agent.py                    # Main agent entry point
+├── agent/
+│   └── agent.py                # Main agent entry point
 ├── config/
 │   ├── __init__.py
 │   └── settings.py             # All configuration (intervals, limits, etc.)
 ├── tools/
 │   ├── tool_fetch_hl_raw.py    # LangChain tool for fetching Hyperliquid data
 │   └── context_manager.py      # Context document loading system
+├── memory/
+│   ├── __init__.py
+│   └── session_manager.py      # Conversation persistence and session management
 ├── agent_context/
 │   ├── Mentality and Personality.md
 │   ├── Strategy.md
 │   └── November 2025.md        # Trading journal
-└── agent_outputs/              # Generated data files
+├── agent_outputs/              # Generated data files
+├── conversations/              # Conversation session storage (gitignored)
+├── requirements.txt            # Python dependencies
+└── MEMORY_GUIDE.md            # Complete memory system documentation
 ```
 
 ---
@@ -620,6 +630,175 @@ The agent:
 
 ---
 
+## Conversation Memory
+
+**File**: `memory/session_manager.py`
+
+EMERALD now has **persistent conversation memory** - the agent remembers your previous discussions and can maintain context across multiple invocations.
+
+### How It Works
+
+**Without Memory** (old behavior):
+```bash
+$ python agent/agent.py "What's BTC doing on 1h?"
+[Analysis of BTC...]
+
+$ python agent/agent.py "What about ETH?"
+# ❌ No context - agent doesn't remember BTC discussion
+```
+
+**With Memory** (current behavior):
+```bash
+$ python agent/agent.py "What's BTC doing on 1h?"
+🆕 Starting new session: 2025-11-08_session
+[Analysis of BTC saved to memory...]
+
+$ python agent/agent.py "What about ETH?"
+📝 Continuing session: 2025-11-08_session (2 previous messages)
+# ✅ Agent remembers BTC and can compare!
+"ETH looks cleaner than the BTC setup we just looked at..."
+```
+
+### Key Features
+
+- **Automatic Daily Sessions**: Creates or continues sessions based on today's date
+- **Named Sessions**: Create dedicated sessions for different strategies or workflows
+- **Configurable Memory Depth**: Default 20 messages, adjustable from 5-50+
+- **Session Persistence**: All conversations stored as JSON in `conversations/`
+- **Rich UI**: Visual indicators showing session status and message count
+
+### Basic Usage
+
+**Default Behavior** (auto-continue today's session):
+```bash
+python agent/agent.py "What's BTC doing on 1h?"
+python agent/agent.py "What about ETH?"
+python agent/agent.py "Which setup is better?"
+# All three messages are part of the same conversation!
+```
+
+**Session Management Commands**:
+```bash
+# List all sessions
+python agent/agent.py --list-sessions
+
+# Use a specific session
+python agent/agent.py --session "morning_trades" "Analyze BTC"
+
+# Start a new session
+python agent/agent.py --new "Fresh analysis"
+
+# View session history
+python agent/agent.py --show-session "2025-11-08_session"
+
+# Delete a session
+python agent/agent.py --delete-session "old_session"
+
+# Custom memory depth
+python agent/agent.py --max-history 30 "Complex analysis"
+```
+
+### Memory Architecture
+
+The memory system uses a simple but effective approach:
+
+1. **Storage**: JSON files (one per session) in `conversations/` directory
+2. **Context Window**: Loads last N messages (default: 20) before each invocation
+3. **Session Naming**: Auto-generated based on date or custom user-defined
+4. **Metadata**: Tracks message count, timestamps, and conversation metadata
+
+**Example Session File** (`conversations/2025-11-08_session.json`):
+```json
+{
+  "session_id": "2025-11-08_session",
+  "created_at": "2025-11-08T09:15:23",
+  "updated_at": "2025-11-08T11:45:12",
+  "messages": [
+    {
+      "role": "user",
+      "content": "What's BTC doing on 1h?",
+      "timestamp": "2025-11-08T09:15:23"
+    },
+    {
+      "role": "assistant",
+      "content": "BTC 1H Analysis...",
+      "timestamp": "2025-11-08T09:16:45"
+    }
+  ],
+  "metadata": {
+    "message_count": 2
+  }
+}
+```
+
+### Use Cases
+
+**Daily Trading Session**:
+```bash
+# Morning - automatic session creation
+python agent/agent.py "What's the overall market bias?"
+python agent/agent.py "BTC just swept the low. Good entry?"
+python agent/agent.py "Compare with ETH setup"
+# All saved to today's session automatically
+```
+
+**Strategy Development**:
+```bash
+# Dedicated session for testing a strategy
+python agent/agent.py -s "fvg_strategy" "Show me BTC FVGs on 1h"
+python agent/agent.py -s "fvg_strategy" "Which FVG is most likely to hold?"
+python agent/agent.py -s "fvg_strategy" "How often do these work?"
+```
+
+**Multi-Coin Comparison**:
+```bash
+python agent/agent.py -s "comparison" "Analyze BTC, ETH, SOL on 1h"
+python agent/agent.py -s "comparison" "Which has the cleanest setup?"
+python agent/agent.py -s "comparison" "Show me the ETH entry"
+```
+
+### Token Management
+
+The system automatically manages context to avoid token limits:
+
+- **Default**: Last 20 messages included (≈10k-20k tokens)
+- **Adjustable**: Use `--max-history N` to customize
+- **Smart Truncation**: Older messages remain in storage (viewable with `--show-session`) but aren't included in context
+
+### Best Practices
+
+1. **Use descriptive session names** for dedicated workflows:
+   ```bash
+   python agent/agent.py -s "btc_scalping_strategy" "..."
+   python agent/agent.py -s "swing_trade_ideas" "..."
+   ```
+
+2. **Clean up old sessions** periodically:
+   ```bash
+   python agent/agent.py --list-sessions
+   python agent/agent.py --delete-session "2025-10-15_session"
+   ```
+
+3. **Adjust memory depth** based on complexity:
+   ```bash
+   # Quick questions - low memory
+   python agent/agent.py --max-history 5 "Current BTC price?"
+
+   # Deep analysis - high memory
+   python agent/agent.py --max-history 40 "Review our strategy discussion"
+   ```
+
+### Future Enhancements
+
+This is **Phase 1** of a 3-phase memory roadmap:
+
+- **Phase 2** (planned): SQLite storage, automatic summarization, enhanced metadata
+- **Phase 3** (future): Semantic search, interactive REPL, cross-session insights
+
+For complete documentation, see `MEMORY_GUIDE.md`.
+
+---
+
 ## Usage Examples
 
 ### Example 1: Basic Price Check
@@ -771,7 +950,7 @@ python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install dependencies
-pip install anthropic langchain langchain-anthropic python-dotenv requests rich
+pip install -r requirements.txt
 
 # Create .env file
 echo "ANTHROPIC_API_KEY=your_key_here" > .env
@@ -805,14 +984,20 @@ tree -L 2
 ### Running the Agent
 
 ```bash
-# Basic usage
-python agent.py "Your query here"
+# Basic usage (auto-continues today's session)
+python agent/agent.py "Your query here"
 
 # Examples
-python agent.py "What's the BTC setup on 1h?"
-python agent.py "Analyze ETH across Daily, 4H, 1H"
-python agent.py "I want to short. Give me the best entry on 15m"
-python agent.py "Why do I keep losing on breakouts?"
+python agent/agent.py "What's the BTC setup on 1h?"
+python agent/agent.py "Analyze ETH across Daily, 4H, 1H"
+python agent/agent.py "I want to short. Give me the best entry on 15m"
+python agent/agent.py "Why do I keep losing on breakouts?"
+
+# Session management
+python agent/agent.py --list-sessions                      # List all sessions
+python agent/agent.py -s "morning_trades" "Analyze BTC"    # Use specific session
+python agent/agent.py --new "Fresh analysis"               # Force new session
+python agent/agent.py --show-session "2025-11-08_session"  # View session history
 ```
 
 ### Configuration Changes
