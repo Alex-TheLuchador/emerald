@@ -126,8 +126,7 @@ def calculate_basis_spread(spot_price: float, perp_price: float) -> Dict[str, An
     }
 
 
-@tool
-def fetch_perpetuals_basis_tool(coin: str, use_cache: bool = True) -> Dict[str, Any]:
+def fetch_perpetuals_basis(coin: str, use_cache: bool = True) -> Dict[str, Any]:
     """
     Fetch perpetuals basis spread (spot-perp deviation).
 
@@ -172,15 +171,19 @@ def fetch_perpetuals_basis_tool(coin: str, use_cache: bool = True) -> Dict[str, 
         }
 
 
-def fetch_perpetuals_basis(coin: str, use_cache: bool = True) -> Dict[str, Any]:
+@tool
+def fetch_perpetuals_basis_tool(coin: str, use_cache: bool = True) -> Dict[str, Any]:
     """
-    Non-tool version for direct function calls.
+    Fetch perpetuals basis spread (spot-perp deviation).
+
+    This is a critical institutional metric. When basis and funding
+    align, it confirms real institutional positioning vs noise.
 
     Args:
-        coin: Trading pair
+        coin: Trading pair (e.g., "BTC", "ETH")
         use_cache: Use cached data
 
     Returns:
-        Basis metrics
+        Basis spread metrics
     """
-    return fetch_perpetuals_basis_tool(coin, use_cache)
+    return fetch_perpetuals_basis(coin, use_cache)

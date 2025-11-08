@@ -146,8 +146,7 @@ def calculate_trade_flow_imbalance(
     }
 
 
-@tool
-def fetch_trade_flow_metrics_tool(
+def fetch_trade_flow_metrics(
     coin: str,
     lookback_seconds: int = 60,
     min_size_usd: float = 1000.0,
@@ -205,22 +204,26 @@ def fetch_trade_flow_metrics_tool(
         }
 
 
-def fetch_trade_flow_metrics(
+@tool
+def fetch_trade_flow_metrics_tool(
     coin: str,
     lookback_seconds: int = 60,
     min_size_usd: float = 1000.0,
     use_cache: bool = True
 ) -> Dict[str, Any]:
     """
-    Non-tool version for direct function calls.
+    Fetch and analyze trade flow (Time & Sales) data.
+
+    This tracks ACTUAL INSTITUTIONAL FLOW - real fills, not just quotes.
+    Large aggressive trades reveal smart money positioning.
 
     Args:
-        coin: Trading pair
-        lookback_seconds: Time window
-        min_size_usd: Min institutional trade size
-        use_cache: Use cache
+        coin: Trading pair (e.g., "BTC")
+        lookback_seconds: Time window in seconds (default: 60)
+        min_size_usd: Min trade size to classify as institutional (default: $1000)
+        use_cache: Use cached data
 
     Returns:
         Trade flow metrics
     """
-    return fetch_trade_flow_metrics_tool(coin, lookback_seconds, min_size_usd, use_cache)
+    return fetch_trade_flow_metrics(coin, lookback_seconds, min_size_usd, use_cache)
