@@ -166,6 +166,56 @@ class VolumeMetrics:
 
 
 @dataclass
+class BasisMetrics:
+    """Perpetuals basis spread metrics."""
+
+    spot_price: float
+    """Spot/index reference price."""
+
+    perp_price: float
+    """Perpetual contract price."""
+
+    basis_pct: float
+    """Basis spread as percentage (positive = premium, negative = discount)."""
+
+    basis_strength: Literal["extreme_premium", "moderate_premium", "neutral",
+                           "moderate_discount", "extreme_discount"]
+    """Categorical strength of basis deviation."""
+
+    arb_opportunity: bool
+    """True if basis exceeds arbitrage threshold (0.3%)."""
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary for JSON serialization."""
+        return asdict(self)
+
+
+@dataclass
+class TradeFlowMetrics:
+    """Trade flow (Time & Sales) analysis metrics."""
+
+    imbalance: float
+    """Trade flow imbalance (-1 to 1). Positive = aggressive buying."""
+
+    strength: Literal["strong_buy_pressure", "moderate_buy_pressure", "neutral",
+                     "moderate_sell_pressure", "strong_sell_pressure"]
+    """Strength classification of trade flow."""
+
+    large_trades_count: int
+    """Number of trades above minimum size threshold."""
+
+    total_trades: int
+    """Total number of trades in period."""
+
+    total_volume: float
+    """Total volume across all trades."""
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary for JSON serialization."""
+        return asdict(self)
+
+
+@dataclass
 class InstitutionalMetrics:
     """Complete institutional metrics package.
 
@@ -197,6 +247,12 @@ class InstitutionalMetrics:
     volume: Optional[VolumeMetrics] = None
     """Volume analysis metrics (if requested)."""
 
+    basis: Optional[BasisMetrics] = None
+    """Perpetuals basis spread metrics (if requested)."""
+
+    trade_flow: Optional[TradeFlowMetrics] = None
+    """Trade flow analysis metrics (if requested)."""
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         result = {
@@ -215,6 +271,10 @@ class InstitutionalMetrics:
             result["vwap"] = self.vwap.to_dict()
         if self.volume:
             result["volume"] = self.volume.to_dict()
+        if self.basis:
+            result["basis"] = self.basis.to_dict()
+        if self.trade_flow:
+            result["trade_flow"] = self.trade_flow.to_dict()
 
         return result
 
@@ -232,6 +292,8 @@ class InstitutionalMetrics:
         open_interest = OpenInterestMetrics(**data["open_interest"]) if "open_interest" in data else None
         vwap = VWAPMetrics(**data["vwap"]) if "vwap" in data else None
         volume = VolumeMetrics(**data["volume"]) if "volume" in data else None
+        basis = BasisMetrics(**data["basis"]) if "basis" in data else None
+        trade_flow = TradeFlowMetrics(**data["trade_flow"]) if "trade_flow" in data else None
 
         return cls(
             coin=coin,
@@ -242,4 +304,6 @@ class InstitutionalMetrics:
             open_interest=open_interest,
             vwap=vwap,
             volume=volume,
+            basis=basis,
+            trade_flow=trade_flow,
         )

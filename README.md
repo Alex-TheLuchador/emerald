@@ -2,7 +2,99 @@
 
 **E**ffective **M**arket **E**valuation and **R**igorous **A**nalysis for **L**ogical **D**ecisions
 
+---
+
+## 🚀 Phase 1 Update: Institutional-Grade Quantitative Engine
+
+**EMERALD has evolved from a pattern-based system to a fully quantitative institutional trading engine.**
+
+### What Changed
+
+**Removed:**
+- ❌ ICT/SMC pattern analysis (subjective, discretionary)
+- ❌ Manual chart interpretation
+- ❌ Narrative-based trading
+
+**Added:**
+- ✅ **Perpetuals Basis Tracking** - Spot-perp spread analysis (institutional arbitrage signals)
+- ✅ **Trade Flow Analysis** - Real-time institutional buying/selling detection
+- ✅ **Multi-Timeframe Convergence** - Signal alignment across 1m/5m/15m timeframes
+- ✅ **Enhanced Summary Engine** - Funding-basis convergence checks (35-point scoring)
+- ✅ **Pure Quantitative System Prompt** - No subjective analysis, only data-driven signals
+
+### Core Philosophy
+
+**Multi-Signal Convergence:**
+- Only trade when 3+ independent metrics align
+- Convergence score 70+ required (otherwise NO TRADE)
+- Funding-basis alignment check (catches fake signals)
+- Order book + trade flow confirmation (real institutional positioning)
+
+**Institutional Metrics:**
+1. **Order Book Imbalance** (-1 to +1 scale)
+2. **Trade Flow Imbalance** (actual fills, not quotes)
+3. **Funding Rate** (sentiment extremes, >10% = contrarian signal)
+4. **Perpetuals Basis** (spot-perp deviation, arb opportunities)
+5. **Open Interest Divergence** (OI + price correlation)
+
+### New Tools
+
+```bash
+# Fetch complete institutional metrics
+python -c "
+from tools.ie_fetch_institutional_metrics import fetch_institutional_metrics
+import json
+result = fetch_institutional_metrics('BTC')
+print(json.dumps(result['summary'], indent=2))
+"
+
+# Multi-timeframe convergence analysis (THE EDGE)
+python -c "
+from tools.ie_multi_timeframe_convergence import fetch_multi_timeframe_convergence
+result = fetch_multi_timeframe_convergence('BTC', ['1m', '5m', '15m'])
+print(f\"Convergence: {result['convergence_score']}/100\")
+print(f\"Recommendation: {result['recommendation']}\")
+"
+```
+
+### Usage Example
+
+```bash
+# Pure quantitative analysis
+python agent/agent.py "Analyze BTC. Should I trade it?"
+
+# Expected response format:
+# 🎯 BTC LONG - High Conviction
+#
+# Convergence Score: 82/100
+# Aligned Signals:
+# - Order book: 0.67 (strong bid pressure)
+# - Trade flow: 0.58 (aggressive buying)
+# - Funding: -12% annualized (extreme bearish → contrarian long)
+# - Basis: -0.41% (extreme discount → bullish)
+# - OI: strong_bullish (OI↑ + Price↑)
+#
+# Entry: $67,845
+# Stop: $67,320
+# Target 1: $68,450
+# Target 2: $68,900
+# R:R Ratio: 2.8:1
+#
+# Position Size: 1.5% of account
+```
+
+### What's Next: Phase 2 & 3
+
+- **Phase 2**: Order book microstructure, liquidation tracking, cross-exchange arbitrage
+- **Phase 3**: Risk management layer, position sizing algorithms, backtest framework
+
+---
+
+## Legacy Overview (Pre-Phase 1)
+
 A LangChain-powered AI trading assistant for analyzing Hyperliquid perpetuals markets using ICT (Inner Circle Trader) concepts like market structure, liquidity pools, Fair Value Gaps (FVGs), and swing analysis.
+
+**Note:** ICT/SMC analysis has been deprecated in favor of quantitative institutional metrics. Context documents referencing ICT are currently disabled.
 
 ---
 
