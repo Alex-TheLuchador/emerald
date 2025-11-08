@@ -156,36 +156,42 @@ def _fetch_raw_oi(coin: str) -> Dict[str, Any]:
         response.raise_for_status()
         data = response.json()
 
-        # data is usually [meta, asset_ctxs]
+        # Hyperliquid API returns [meta, asset_ctxs]
+        # Coins are indexed: meta[0]['universe'] has coin names, asset_ctxs uses same index
         if not isinstance(data, list) or len(data) < 2:
             raise ValueError("Unexpected API response format")
 
+        meta = data[0]
         asset_ctxs = data[1]
 
-        # Find the specific coin
-        for ctx in asset_ctxs:
-            if isinstance(ctx, dict):
-                # Try multiple possible field names for coin identification
-                coin_name = (ctx.get("coin") or ctx.get("symbol") or
-                            ctx.get("name") or ctx.get("asset") or "")
+        # Find coin index in universe
+        coin_index = None
+        if isinstance(meta, dict) and "universe" in meta:
+            for i, coin_info in enumerate(meta["universe"]):
+                if isinstance(coin_info, dict) and coin_info.get("name", "").upper() == coin.upper():
+                    coin_index = i
+                    break
 
-                # Match coin (case-insensitive, handle different formats)
-                if coin_name.upper() == coin.upper() or coin_name.upper() == f"{coin.upper()}-USD":
-                    # Try multiple possible field names for OI
-                    oi = (ctx.get("openInterest") or ctx.get("open_interest") or
-                         ctx.get("oi") or ctx.get("openInt") or 0)
+        if coin_index is None:
+            raise ValueError(f"Coin {coin} not found in universe")
 
-                    # Try multiple possible field names for price
-                    price = (ctx.get("markPx") or ctx.get("midPx") or
-                            ctx.get("mark_price") or ctx.get("price") or 0)
+        # Get OI and price from asset context at same index
+        if coin_index >= len(asset_ctxs):
+            raise ValueError(f"Coin index {coin_index} out of range in asset contexts")
 
-                    return {
-                        "coin": coin,
-                        "oi": float(oi),
-                        "price": float(price),
-                    }
+        ctx = asset_ctxs[coin_index]
+        if not isinstance(ctx, dict):
+            raise ValueError(f"Invalid asset context format for {coin}")
 
-        raise ValueError(f"Coin {coin} not found in API response")
+        # Extract OI and price
+        oi = ctx.get("openInterest", 0)
+        price = ctx.get("markPx", ctx.get("midPx", 0))
+
+        return {
+            "coin": coin,
+            "oi": float(oi),
+            "price": float(price),
+        }
 
     except requests.exceptions.Timeout:
         raise requests.exceptions.RequestException(f"API request timeout for {coin} OI")

@@ -96,16 +96,17 @@ def _parse_order_book_levels(
     bids_raw = []
     asks_raw = []
 
-    # Format 1: Direct dict with bids/asks
-    if isinstance(data, dict) and "bids" in data and "asks" in data:
+    # Format 1: Hyperliquid l2Book format with 'levels' key
+    # Structure: {'coin': 'BTC', 'time': 123, 'levels': [[bids], [asks]]}
+    if isinstance(data, dict) and "levels" in data and isinstance(data["levels"], list):
+        levels = data["levels"]
+        if len(levels) >= 2 and isinstance(levels[0], list) and isinstance(levels[1], list):
+            bids_raw = levels[0]
+            asks_raw = levels[1]
+    # Format 2: Direct dict with bids/asks keys
+    elif isinstance(data, dict) and "bids" in data and "asks" in data:
         bids_raw = data["bids"]
         asks_raw = data["asks"]
-    # Format 2: Nested in levels array
-    elif isinstance(data, dict) and "levels" in data and isinstance(data["levels"], list) and data["levels"]:
-        first_level = data["levels"][0]
-        if isinstance(first_level, dict):
-            bids_raw = first_level.get("bids", [])
-            asks_raw = first_level.get("asks", [])
     # Format 3: Wrapped list (from our normalization)
     elif isinstance(data, dict) and "raw_list" in data:
         # List format - might be [bids, asks] or something else

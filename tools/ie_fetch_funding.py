@@ -63,24 +63,26 @@ def _fetch_raw_funding(coin: str, lookback_hours: int = 24) -> Dict[str, Any]:
         meta_data = response.json()
 
         # Extract funding rate for the specified coin
+        # Hyperliquid API returns [meta, asset_ctxs]
+        # Coins are indexed: meta[0]['universe'] has coin names, asset_ctxs uses same index
         current_funding = None
-        if isinstance(meta_data, list) and len(meta_data) > 1:
-            # meta_data[1] contains asset contexts
+        if isinstance(meta_data, list) and len(meta_data) >= 2:
+            meta = meta_data[0]
             asset_ctxs = meta_data[1]
-            for ctx in asset_ctxs:
-                if isinstance(ctx, dict):
-                    # Try multiple possible field names for coin identification
-                    coin_name = (ctx.get("coin") or ctx.get("symbol") or
-                                ctx.get("name") or ctx.get("asset") or "")
 
-                    # Match coin (case-insensitive, handle different formats)
-                    if coin_name.upper() == coin.upper() or coin_name.upper() == f"{coin.upper()}-USD":
-                        # Try multiple possible field names for funding
-                        current_funding = (ctx.get("funding") or ctx.get("fundingRate") or
-                                         ctx.get("funding_rate") or ctx.get("prevFunding"))
-                        if current_funding is not None:
-                            current_funding = float(current_funding)
-                            break
+            # Find coin index in universe
+            coin_index = None
+            if isinstance(meta, dict) and "universe" in meta:
+                for i, coin_info in enumerate(meta["universe"]):
+                    if isinstance(coin_info, dict) and coin_info.get("name", "").upper() == coin.upper():
+                        coin_index = i
+                        break
+
+            # Get funding from asset context at same index
+            if coin_index is not None and isinstance(asset_ctxs, list) and coin_index < len(asset_ctxs):
+                ctx = asset_ctxs[coin_index]
+                if isinstance(ctx, dict) and "funding" in ctx:
+                    current_funding = float(ctx["funding"])
 
         # Now get funding history
         history_payload = {
