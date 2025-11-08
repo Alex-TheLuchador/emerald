@@ -83,10 +83,116 @@ python agent/agent.py "Analyze BTC. Should I trade it?"
 # Position Size: 1.5% of account
 ```
 
-### What's Next: Phase 2 & 3
+---
 
-- **Phase 2**: Order book microstructure, liquidation tracking, cross-exchange arbitrage
-- **Phase 3**: Risk management layer, position sizing algorithms, backtest framework
+## 🔥 Phase 2 Update: Advanced Liquidity Intelligence
+
+**EMERALD now detects hidden institutional activity that doesn't show up in single snapshots.**
+
+### What's New in Phase 2
+
+**Added Tools:**
+- ✅ **Order Book Microstructure** - Spoofing, iceberg orders, wall dynamics detection
+- ✅ **Liquidation Cascade Tracker** - Long/short squeeze detection, stop hunt zones
+- ✅ **Cross-Exchange Arbitrage Monitor** - HL vs Binance price flow signals
+
+### Phase 2 Capabilities
+
+#### 1. Order Book Microstructure Analysis
+Tracks order book snapshots over 60 seconds to detect:
+
+**Spoofing Detection:**
+- Large orders appearing/disappearing 3+ times = fake liquidity
+- Confidence levels: high (5+ appearances), moderate (3-4 appearances)
+
+**Iceberg Orders:**
+- Orders that keep refilling at same price = hidden institutional accumulation
+- Tracks 3+ refill events to confirm institutional activity
+
+**Wall Dynamics:**
+- Large bid walls moving up = bullish institutional support
+- Large ask walls moving down = bearish institutional resistance
+
+```python
+from tools.ie_order_book_microstructure import fetch_order_book_microstructure
+
+result = fetch_order_book_microstructure('BTC')
+print(f"Spoofs detected: {len(result['spoofing'])}")
+print(f"Icebergs detected: {len(result['icebergs'])}")
+print(f"Wall signals: {result['signals']}")
+```
+
+#### 2. Liquidation Cascade Detection
+Identifies mass liquidation events:
+
+**Patterns:**
+- **Short Squeeze**: Mass short liquidations → bullish momentum
+- **Long Squeeze**: Mass long liquidations → bearish momentum
+- **Cascade**: 5+ liquidations within 5 minutes → high volatility incoming
+
+**Stop Hunt Zones:**
+- Tracks price levels with >$100k liquidations
+- Identifies where stop losses are clustered
+
+```python
+from tools.ie_liquidation_tracker import fetch_liquidation_tracker
+
+result = fetch_liquidation_tracker('BTC', lookback_minutes=30)
+print(f"Signal: {result['signal']}")
+print(f"Cascade detected: {result['cascade_detected']}")
+print(f"Stop hunt zones: {result['stop_hunt_zones']}")
+```
+
+#### 3. Cross-Exchange Arbitrage Monitor
+Compares Hyperliquid vs Binance prices:
+
+**Flow Signals:**
+- HL cheaper than Binance → arb bots buying on HL → bullish pressure
+- HL expensive vs Binance → arb bots selling on HL → bearish pressure
+- >0.1% deviation = arbitrage opportunity
+
+```python
+from tools.ie_cross_exchange_arb import fetch_cross_exchange_arb
+
+result = fetch_cross_exchange_arb('BTC')
+print(f"Deviation: {result['deviation_pct']}%")
+print(f"Signal: {result['signal']}")
+print(f"Interpretation: {result['interpretation']}")
+```
+
+### Usage with Agent
+
+```bash
+# Advanced analysis with Phase 2 tools
+python agent/agent.py "Analyze BTC. Check for spoofing and liquidation cascades."
+
+# Expected response includes Phase 2 insights:
+# - Spoofing: 2 levels detected (moderate confidence)
+# - Icebergs: 1 iceberg at $67,800 (5 refills, institutional accumulation)
+# - Liquidations: Short squeeze detected, 8 liquidations in 5 min (bullish)
+# - Cross-exchange: HL 0.15% cheaper than Binance (arb buying = bullish)
+```
+
+### When to Use Phase 2 Tools
+
+**Order Book Microstructure:**
+- When price is consolidating (detect accumulation/distribution)
+- Suspected manipulation (spoofing confirmation)
+- High-volume zones (institutional activity)
+
+**Liquidation Tracker:**
+- Price near key levels (stop hunt zones)
+- After violent moves (cascade confirmation)
+- High funding rates (liquidation risk assessment)
+
+**Cross-Exchange Arbitrage:**
+- Validating breakouts (arb flow confirmation)
+- Low volume periods (detect early institutional flow)
+- Divergent price action (exchange-specific signals)
+
+### What's Next: Phase 3
+
+- **Phase 3**: Risk management layer, position sizing algorithms, dynamic stop loss, backtest framework
 
 ---
 
