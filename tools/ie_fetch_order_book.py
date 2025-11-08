@@ -60,18 +60,15 @@ def _fetch_raw_order_book(coin: str, depth: int = 20) -> Dict[str, Any]:
         response.raise_for_status()
         data = response.json()
 
-        # Validate response structure
-        if not isinstance(data, dict):
-            raise ValueError(f"Invalid API response format: expected dict, got {type(data)}")
-
-        # Hyperliquid returns different formats, try to find the book data
-        if "levels" in data:
+        # Hyperliquid l2Book returns different formats, normalize it
+        if isinstance(data, dict):
+            # Already a dict, good
             return data
-        elif isinstance(data, dict) and ("bids" in data or "asks" in data):
-            return data
+        elif isinstance(data, list):
+            # List format - wrap it
+            return {"raw_list": data}
         else:
-            # Sometimes it's wrapped
-            raise ValueError(f"Unexpected order book format: {list(data.keys())}")
+            raise ValueError(f"Unexpected response type: {type(data)}")
 
     except requests.exceptions.Timeout:
         raise requests.exceptions.RequestException(f"API request timeout for {coin} order book")
@@ -86,7 +83,7 @@ def _parse_order_book_levels(
     """Parse raw order book data into bid/ask lists.
 
     Args:
-        data: Raw API response
+        data: Raw API response (can be dict or wrapped list)
         depth: Number of levels to parse
 
     Returns:
@@ -96,8 +93,32 @@ def _parse_order_book_levels(
         ValueError: If data structure is invalid
     """
     # Try different possible response formats
-    bids_raw = data.get("levels", [{}])[0].get("bids", data.get("bids", []))
-    asks_raw = data.get("levels", [{}])[0].get("asks", data.get("asks", []))
+    bids_raw = []
+    asks_raw = []
+
+    # Format 1: Direct dict with bids/asks
+    if isinstance(data, dict) and "bids" in data and "asks" in data:
+        bids_raw = data["bids"]
+        asks_raw = data["asks"]
+    # Format 2: Nested in levels array
+    elif isinstance(data, dict) and "levels" in data and isinstance(data["levels"], list) and data["levels"]:
+        first_level = data["levels"][0]
+        if isinstance(first_level, dict):
+            bids_raw = first_level.get("bids", [])
+            asks_raw = first_level.get("asks", [])
+    # Format 3: Wrapped list (from our normalization)
+    elif isinstance(data, dict) and "raw_list" in data:
+        # List format - might be [bids, asks] or something else
+        raw_list = data["raw_list"]
+        if isinstance(raw_list, list) and len(raw_list) >= 2:
+            if isinstance(raw_list[0], list):
+                bids_raw = raw_list[0]  # Assume first is bids
+                asks_raw = raw_list[1]  # Assume second is asks
+    # Format 4: Direct list [bids, asks]
+    elif isinstance(data, list) and len(data) >= 2:
+        if isinstance(data[0], list) and isinstance(data[1], list):
+            bids_raw = data[0]  # First list is bids
+            asks_raw = data[1]  # Second list is asks
 
     if not bids_raw or not asks_raw:
         raise ValueError("Order book data missing bids or asks")
