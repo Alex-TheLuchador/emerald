@@ -20,6 +20,9 @@ if str(BASE_DIR) not in sys.path:
 from tools.tool_fetch_hl_raw import fetch_hl_raw
 from tools.ie_fetch_institutional_metrics import fetch_institutional_metrics_tool
 from tools.ie_multi_timeframe_convergence import fetch_multi_timeframe_convergence_tool
+from tools.ie_order_book_microstructure import fetch_order_book_microstructure_tool
+from tools.ie_liquidation_tracker import fetch_liquidation_tracker_tool
+from tools.ie_cross_exchange_arb import fetch_cross_exchange_arb_tool
 from config.settings import AGENT_CONFIG, IE_CONFIG, generate_constraint_text
 from memory.session_manager import SessionManager
 
@@ -181,6 +184,31 @@ Parameters:
 
 Use this for THE HIGHEST EDGE setups (90+ convergence possible).
 
+PHASE 2 TOOLS (Advanced Liquidity Intelligence):
+
+1. fetch_order_book_microstructure_tool
+   Detects hidden institutional activity:
+   - Spoofing: Fake liquidity (orders appearing/disappearing 3+ times)
+   - Iceberg orders: Hidden accumulation (orders refilling at same price)
+   - Wall dynamics: Large orders moving with price
+
+   Use when: You suspect manipulation or want to confirm institutional positioning
+
+2. fetch_liquidation_tracker_tool
+   Tracks liquidation cascades:
+   - Short squeeze (shorts liquidated) = bullish
+   - Long squeeze (longs liquidated) = bearish
+   - Cascade detection (5+ liquidations in 5 min) = high volatility
+
+   Use when: Price is near key levels or after violent moves
+
+3. fetch_cross_exchange_arb_tool
+   Monitors cross-exchange price discrepancies:
+   - HL cheaper than Binance = arb bots buying on HL = bullish
+   - HL expensive vs Binance = arb bots selling on HL = bearish
+
+   Use when: Validating price action or looking for flow signals
+
 SECONDARY TOOL: fetch_hl_raw (optional, for VWAP analysis)
 Use ONLY if you need additional VWAP deviation data.
 
@@ -195,7 +223,8 @@ Mission:
 - Provide institutional-grade quantitative analysis
 - Only recommend trades with 70+ convergence score
 - Focus on multi-signal alignment, not single indicators
-- Treat trading as probability management, not pattern prediction"""
+- Treat trading as probability management, not pattern prediction
+- Use Phase 2 tools for additional conviction in high-edge setups"""
 
 # System prompt is pure quantitative now (no context documents in Phase 1)
 SYSTEM_PROMPT = SYSTEM_PROMPT_CORE
@@ -206,9 +235,14 @@ SYSTEM_PROMPT = SYSTEM_PROMPT_CORE
 agent = create_agent(
     model=model,
     tools=[
+        # Core Phase 1 tools
         fetch_hl_raw,
         fetch_institutional_metrics_tool,
         fetch_multi_timeframe_convergence_tool,
+        # Phase 2 advanced liquidity tools
+        fetch_order_book_microstructure_tool,
+        fetch_liquidation_tracker_tool,
+        fetch_cross_exchange_arb_tool,
     ],
     system_prompt=SYSTEM_PROMPT,
 )
