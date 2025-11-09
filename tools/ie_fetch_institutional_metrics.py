@@ -20,6 +20,8 @@ if str(BASE_DIR) not in sys.path:
 from tools.ie_fetch_order_book import fetch_order_book_metrics
 from tools.ie_fetch_funding import fetch_funding_metrics
 from tools.ie_fetch_open_interest import fetch_open_interest_metrics
+from tools.ie_fetch_perpetuals_basis import fetch_perpetuals_basis
+from tools.ie_fetch_trade_flow import fetch_trade_flow_metrics
 from ie.data_models import InstitutionalMetrics
 
 
@@ -28,9 +30,12 @@ def fetch_institutional_metrics(
     include_order_book: bool = True,
     include_funding: bool = True,
     include_oi: bool = True,
+    include_basis: bool = True,
+    include_trade_flow: bool = True,
     use_cache: bool = True,
     order_book_depth: int = 10,
     funding_lookback_hours: int = 24,
+    trade_flow_lookback_seconds: int = 60,
 ) -> Dict[str, Any]:
     """Fetch comprehensive institutional metrics for a trading pair.
 
@@ -42,9 +47,12 @@ def fetch_institutional_metrics(
         include_order_book: Include order book imbalance metrics (default: True)
         include_funding: Include funding rate metrics (default: True)
         include_oi: Include open interest metrics (default: True)
+        include_basis: Include perpetuals basis spread metrics (default: True)
+        include_trade_flow: Include trade flow analysis metrics (default: True)
         use_cache: Whether to use cached data (default: True)
         order_book_depth: Order book depth to analyze (default: 10)
         funding_lookback_hours: Hours of funding history (default: 24)
+        trade_flow_lookback_seconds: Seconds of trade flow data (default: 60)
 
     Returns:
         Dictionary with comprehensive institutional metrics:
@@ -129,6 +137,26 @@ def fetch_institutional_metrics(
             if result["price"] is None and "current_price" in oi_metrics:
                 result["price"] = oi_metrics["current_price"]
 
+    # Fetch basis metrics
+    if include_basis:
+        basis_metrics = fetch_perpetuals_basis(coin, use_cache)
+        if "error" in basis_metrics:
+            errors.append(f"Basis: {basis_metrics['error']}")
+            result["basis"] = None
+        else:
+            result["basis"] = basis_metrics
+            if result["price"] is None and "perp_price" in basis_metrics:
+                result["price"] = basis_metrics["perp_price"]
+
+    # Fetch trade flow metrics
+    if include_trade_flow:
+        trade_flow_metrics = fetch_trade_flow_metrics(coin, trade_flow_lookback_seconds, use_cache=use_cache)
+        if "error" in trade_flow_metrics:
+            errors.append(f"Trade flow: {trade_flow_metrics['error']}")
+            result["trade_flow"] = None
+        else:
+            result["trade_flow"] = trade_flow_metrics
+
     # Add errors if any
     if errors:
         result["errors"] = errors
@@ -156,12 +184,25 @@ def _generate_summary(metrics: Dict[str, Any]) -> Dict[str, Any]:
     # Analyze order book
     ob = metrics.get("order_book")
     if ob and ob is not None:
-        if ob.get("imbalance", 0) > 0.3:
+        if ob.get("imbalance", 0) > 0.4:
             signals.append("strong_bid_pressure")
             bullish_signals += 1
             convergence_score += 25
-        elif ob.get("imbalance", 0) < -0.3:
+        elif ob.get("imbalance", 0) < -0.4:
             signals.append("strong_ask_pressure")
+            bearish_signals += 1
+            convergence_score += 25
+
+    # Analyze trade flow
+    trade_flow = metrics.get("trade_flow")
+    if trade_flow and trade_flow is not None:
+        tf_imbalance = trade_flow.get("imbalance", 0)
+        if tf_imbalance > 0.4:
+            signals.append("strong_buy_flow")
+            bullish_signals += 1
+            convergence_score += 25
+        elif tf_imbalance < -0.4:
+            signals.append("strong_sell_flow")
             bearish_signals += 1
             convergence_score += 25
 
@@ -175,7 +216,39 @@ def _generate_summary(metrics: Dict[str, Any]) -> Dict[str, Any]:
                 bearish_signals += 1
             elif funding.get("annualized_pct", 0) < -10:
                 bullish_signals += 1
-            convergence_score += 20
+            convergence_score += 15
+
+    # Analyze basis
+    basis = metrics.get("basis")
+    if basis and basis is not None:
+        basis_pct = basis.get("basis_pct", 0)
+        if basis_pct > 0.3:
+            signals.append("extreme_premium")
+            # Premium = bearish signal (mean reversion)
+            bearish_signals += 1
+        elif basis_pct < -0.3:
+            signals.append("extreme_discount")
+            # Discount = bullish signal
+            bullish_signals += 1
+
+    # CRITICAL: Funding-Basis Convergence Check
+    if funding and funding is not None and basis and basis is not None:
+        funding_pct = funding.get("annualized_pct", 0)
+        basis_pct = basis.get("basis_pct", 0)
+
+        # Both bullish alignment
+        if funding_pct > 10 and basis_pct > 0.2:
+            signals.append("funding_basis_bullish_convergence")
+            convergence_score += 35  # High weight for convergence
+        # Both bearish alignment
+        elif funding_pct < -10 and basis_pct < -0.2:
+            signals.append("funding_basis_bearish_convergence")
+            convergence_score += 35
+        # Divergence (penalty)
+        elif (funding_pct > 10 and basis_pct < -0.1) or \
+             (funding_pct < -10 and basis_pct > 0.1):
+            signals.append("funding_basis_divergence_avoid")
+            convergence_score -= 20
 
     # Analyze OI
     oi = metrics.get("open_interest")
@@ -189,11 +262,14 @@ def _generate_summary(metrics: Dict[str, Any]) -> Dict[str, Any]:
                 bearish_signals += 1
             convergence_score += 30
 
+    # Ensure score doesn't go negative
+    convergence_score = max(0, convergence_score)
+
     # Determine recommendation
-    if convergence_score >= 70 and bullish_signals > bearish_signals:
-        recommendation = "high_conviction_long"
-    elif convergence_score >= 70 and bearish_signals > bullish_signals:
-        recommendation = "high_conviction_short"
+    if convergence_score >= 85:
+        recommendation = "very_high_conviction" + ("_long" if bullish_signals > bearish_signals else "_short")
+    elif convergence_score >= 70:
+        recommendation = "high_conviction" + ("_long" if bullish_signals > bearish_signals else "_short")
     elif convergence_score >= 50:
         if bullish_signals > bearish_signals:
             recommendation = "moderate_long"
@@ -220,6 +296,8 @@ def fetch_institutional_metrics_tool(
     include_order_book: bool = True,
     include_funding: bool = True,
     include_oi: bool = True,
+    include_basis: bool = True,
+    include_trade_flow: bool = True,
 ) -> Dict[str, Any]:
     """Fetch comprehensive institutional-grade market metrics.
 
@@ -227,14 +305,18 @@ def fetch_institutional_metrics_tool(
     - Order book imbalance (bid/ask pressure)
     - Funding rate extremes (sentiment)
     - Open interest divergence (smart money tracking)
+    - Perpetuals basis spread (spot-perp deviation)
+    - Trade flow analysis (institutional buying/selling)
 
-    Use this to validate ICT setups with quantitative metrics.
+    Use this for multi-signal convergence analysis.
 
     Args:
         coin: Trading pair (e.g., "BTC", "ETH")
         include_order_book: Include order book metrics
         include_funding: Include funding metrics
         include_oi: Include open interest metrics
+        include_basis: Include perpetuals basis metrics
+        include_trade_flow: Include trade flow metrics
 
     Returns:
         Complete institutional metrics package with summary
@@ -244,6 +326,8 @@ def fetch_institutional_metrics_tool(
         include_order_book=include_order_book,
         include_funding=include_funding,
         include_oi=include_oi,
+        include_basis=include_basis,
+        include_trade_flow=include_trade_flow,
     )
 
 
