@@ -6,50 +6,120 @@
 
 ## What is EMERALD?
 
-An **institutional-grade quantitative trading system** for Hyperliquid perpetuals. EMERALD detects when multiple independent institutional metrics align - creating high-probability setups invisible to retail traders.
+An **ICT/SMC trading analyst** for Hyperliquid perpetuals. EMERALD analyzes market structure across multiple timeframes and identifies high-probability setups based on liquidity hunts and structural alignment.
 
-**Core Edge**: Multi-signal convergence. We only trade when 3+ metrics align (70+ convergence score).
+**Core Philosophy**: Markets move from liquidity to liquidity. We trade WITH higher timeframe structure by entering on pullbacks into discount (longs) or premium (shorts) zones.
 
 ### Quick Stats
 
-- **5 Institutional Metrics**: Order book, funding rate, trade flow, perpetuals basis, open interest
-- **3 Advanced Liquidity Tools**: Spoofing detection, liquidation tracking, cross-exchange arb
-- **0-100 Convergence Scoring**: Objective, quantitative grading (A+/A/B/C)
-- **70+ Score Required**: High conviction setups only
-- **Multi-Timeframe Analysis**: 1m/5m/15m must all align
-- **Conversation Memory**: Persistent sessions for contextual discussions
+- **ICT/SMC Methodology**: Structure-based trading system
+- **Multi-Timeframe Analysis**: Daily/4H/1H alignment required
+- **Discount/Premium Zones**: Entry only in optimal price areas
+- **Liquidity Tracking**: PDH/PDL, equal highs/lows, round numbers
+- **IE Confluence Layer**: Quantitative validation (order book, funding, trade flow, OI)
+- **Conversation Memory**: Persistent sessions for analysis continuity
 
 ---
 
-## Documentation
+## Core Concepts (ICT/SMC Explained Like You're 18)
 
-### 🚀 Getting Started
+### What is ICT/SMC?
 
-**New to EMERALD?** Start here:
-- **[Getting Started Guide](Documentation/getting-started.md)** - Installation, quickstart, first steps
-- **[Trading Strategy](Documentation/strategy.md)** - **READ THIS FIRST** - How we make money
+ICT (Inner Circle Trader) / SMC (Smart Money Concepts) is a trading methodology based on understanding how institutional traders (banks, hedge funds) move markets.
 
-### 📊 Core Features
+**The Big Idea**:
+- Markets don't move randomly - they hunt liquidity clusters
+- Liquidity = stop losses + pending orders clustered at key levels
+- Price sweeps these levels (liquidity grab), then reverses
+- We enter AFTER the grab, in the direction price was really going
 
-**Phase 1: Quantitative Engine**
-- **[Phase 1 Documentation](Documentation/phase1-quantitative-engine.md)**
-  - Order Book Imbalance
-  - Funding Rate Analysis
-  - Trade Flow Detection
-  - Perpetuals Basis (Spot-Perp Spread)
-  - Open Interest Divergence
-  - Multi-Timeframe Convergence
+### Market Structure
 
-**Phase 2: Advanced Liquidity Intelligence**
-- **[Phase 2 Documentation](Documentation/phase2-advanced-liquidity.md)**
-  - Order Book Microstructure (Spoofing, Icebergs, Wall Dynamics)
-  - Liquidation Cascade Tracking
-  - Cross-Exchange Arbitrage Monitoring
+Markets move in one of two patterns:
 
-### 🔧 Technical Documentation
+**Bullish Structure** (HH/HL):
+- Higher Highs: Each peak is higher than the last
+- Higher Lows: Each dip is higher than the last
+- Meaning: Buyers are in control → Look for LONG setups
 
-- **[Architecture Overview](Documentation/architecture.md)** - How everything works
-- **[Configuration Reference](Documentation/configuration.md)** - Tuning parameters
+**Bearish Structure** (LL/LH):
+- Lower Lows: Each dip is lower than the last
+- Lower Highs: Each peak is lower than the last
+- Meaning: Sellers are in control → Look for SHORT setups
+
+### The Dealing Range
+
+After price grabs liquidity, it establishes a range:
+- **Range High**: Swing high where liquidity was grabbed
+- **Range Low**: Swing low where liquidity was grabbed
+- **Midpoint**: The 50% level that divides the range
+
+**Entry Zones**:
+- **Discount Zone**: Below 50% (0-45%) → LONG entries
+- **Premium Zone**: Above 50% (55-100%) → SHORT entries
+- **Mid-Range**: 45-55% → SKIP (poor risk/reward)
+
+### Higher Timeframe (HTF) Alignment
+
+**Rule**: Daily, 4H, AND 1H must ALL show the same structure.
+
+- All bullish? → Look for longs in discount
+- All bearish? → Look for shorts in premium
+- Mixed? → NO TRADE (wait for clarity)
+
+This prevents trading against the larger trend.
+
+### Liquidity Pools
+
+Price levels where stops cluster:
+- **PDH/PDL**: Previous Day High/Low (strongest levels)
+- **Equal Highs/Lows**: 2+ swing points at same price
+- **Round Numbers**: $60k, $65k, $70k (psychological levels)
+
+These are our targets - price is magnetically drawn to them.
+
+---
+
+## How EMERALD Works
+
+### 1. Structure Analysis
+```
+EMERALD fetches Daily/4H/1H/5M candles
+  ↓
+Detects swing highs and swing lows
+  ↓
+Determines structure: HH/HL (bullish) or LL/LH (bearish)?
+  ↓
+Checks if all timeframes agree (HTF alignment)
+```
+
+### 2. Entry Validation
+```
+IF HTF aligned:
+  ↓
+Calculate dealing range (swing low to swing high)
+  ↓
+Check current price position:
+  - Bullish structure + discount zone? → VALID LONG
+  - Bearish structure + premium zone? → VALID SHORT
+  - Anything else? → NO SETUP
+```
+
+### 3. IE Confluence (Optional)
+```
+Valid ICT setup found
+  ↓
+Check quantitative metrics:
+  - Order book pressure aligned? (+20 pts)
+  - Trade flow aligned? (+20 pts)
+  - Funding extreme (contrarian)? (+15 pts)
+  - OI divergence? (+20 pts)
+  ↓
+Score 60-75: Grade A+ (full size)
+Score 40-59: Grade A (75% size)
+Score 20-39: Grade B (50% size)
+Score 0-19: Grade C (proceed with caution)
+```
 
 ---
 
@@ -76,64 +146,92 @@ echo "ANTHROPIC_API_KEY=your_key_here" > .env
 ### Basic Usage
 
 ```bash
-# Simple analysis (auto-continues today's session)
-python agent/agent.py "What's BTC doing on 1h?"
+# Analyze a coin for ICT setup
+python agent/agent.py "Analyze BTC"
 
-# Multi-timeframe analysis
-python agent/agent.py "Analyze ETH across Daily, 4H, and 1H"
+# Check specific coin with account balance
+python agent/agent.py "Analyze ETH with $50000 account"
 
-# Get graded setup
-python agent/agent.py "Should I trade BTC right now?"
+# Ask about market structure
+python agent/agent.py "What's the structure on SOL?"
 
-# Check for manipulation
-python agent/agent.py "Analyze BTC. Check for spoofing and liquidation cascades."
+# Check IE confluence for a direction
+python agent/agent.py "Check IE confluence for BTC long"
 ```
 
 ### Session Management
 
 ```bash
+# Continue today's session (default)
+python agent/agent.py "BTC analysis"
+
+# Use a specific session
+python agent/agent.py --session "swing_trades" "Analyze BTC"
+
+# Start fresh session
+python agent/agent.py --new "BTC analysis"
+
 # List all sessions
 python agent/agent.py --list-sessions
 
-# Use specific session
-python agent/agent.py -s "morning_trades" "Analyze BTC"
-
-# Start fresh session
-python agent/agent.py --new "Clean analysis"
-
 # View session history
-python agent/agent.py --show-session "2025-11-08_session"
+python agent/agent.py --show-session "2025-11-09_session"
+
+# Delete old session
+python agent/agent.py --delete-session "old_session"
 ```
 
 ---
 
-## Example Output
+## Example Analysis
 
-```markdown
-### BTC 1H Setup - Grade: A+ (Convergence: 85/100)
+**User**: `python agent/agent.py "Analyze BTC"`
 
-**Phase 1 Metrics**:
-✓ Order Book: -0.62 (strong ask pressure) → +25 pts
-✓ Trade Flow: -0.54 (aggressive selling) → +25 pts
-✓ Funding: +14% annualized (extreme bullish crowd) → +20 pts
-✓ Basis: +0.31% (premium, aligned) → Included
-✓ OI: -5.1% while price +2.3% (weak rally) → +30 pts
-✓ VWAP: +2.1σ on 1m/5m/15m (extreme overextension) → +30 pts
+**EMERALD (if valid setup)**:
+```
+🟢 BTC - LONG SETUP (ICT Valid)
 
-**Phase 2 Confluence** (+10 pts):
-✓ Iceberg sell order at $68,000 (7 refills)
-✓ Recent short squeeze completed (liquidations exhausted)
-✓ HL trading 0.14% premium to Binance (arb selling pressure)
+HTF Alignment: BULLISH
+  - Daily: HH/HL (confidence: 0.85)
+  - 4H: HH/HL (confidence: 0.90)
+  - 1H: HH/HL (confidence: 0.80)
 
-**Recommendation**: HIGH CONVICTION SHORT
+Dealing Range (1H):
+  - High: $68,000
+  - Low: $66,000
+  - Midpoint: $67,000
+  - Current: $66,200 (10% of range - DEEP DISCOUNT)
 
-Entry: $67,800-67,900
-Stop: $68,200
-TP1: $67,200 (50% off at 1.5R)
-TP2: $66,500 (25% off at 3.0R)
-Trail: Remaining 25%
+Entry Setup:
+  - Direction: LONG
+  - Entry: $66,200
+  - Stop Loss: $64,400 (1:1 R:R)
+  - Target 1: $68,000 (range high)
+  - Target 2: $68,500 (PDH)
+  - R:R: 1.0:1
 
-Position Size: 1.5% account risk (A+ grade = full size)
+Position Sizing:
+  - Risk: $100 (1% of $10k account)
+  - Size: 0.0015 BTC
+
+Liquidity Pools:
+  - PDH: $68,500
+  - PDL: $65,800
+  - Nearest above: $67,000
+```
+
+**EMERALD (if invalid)**:
+```
+❌ BTC - NO ICT SETUP
+
+Reason: HTF not aligned
+
+Structure Analysis:
+  - Daily: BULLISH (HH/HL)
+  - 4H: BEARISH (LL/LH) ← CONFLICT
+  - 1H: NEUTRAL
+
+Recommendation: Wait for Daily and 4H to align.
 ```
 
 ---
@@ -142,304 +240,100 @@ Position Size: 1.5% account risk (A+ grade = full size)
 
 ```
 emerald/
-├── agent/                   # Main entry point
-├── config/                  # Configuration (SINGLE SOURCE OF TRUTH)
-├── tools/                   # Phase 1 + Phase 2 tools
-├── ie/                      # Institutional Engine (calculations)
-├── memory/                  # Session management
-├── agent_context/           # Strategy, personality, journal
-├── Documentation/           # 📚 All documentation
-│   ├── strategy.md          # ⭐ START HERE - Trading strategy
-│   ├── getting-started.md   # Installation & quickstart
-│   ├── phase1-quantitative-engine.md
-│   ├── phase2-advanced-liquidity.md
-│   ├── architecture.md      # System design
-│   └── configuration.md     # Settings reference
-├── conversations/           # Session storage (gitignored)
-├── agent_outputs/           # Generated data (gitignored)
-└── .env                     # API keys (gitignored)
+├── agent/
+│   └── agent.py              # Main agent with ICT/SMC system prompt
+├── config/
+│   └── settings.py           # Configuration (ICT thresholds, IE weights)
+├── ict/                      # ICT core modules
+│   ├── swing_detector.py     # Swing high/low detection
+│   ├── structure_analyzer.py # HH/HL vs LL/LH determination
+│   ├── dealing_range.py      # Discount/premium calculator
+│   ├── htf_alignment.py      # Multi-timeframe alignment
+│   ├── liquidity_pools.py    # PDH/PDL, equal highs/lows
+│   └── setup_validator.py    # Master setup validation
+├── tools/                    # Agent tools
+│   ├── ict_analyze_setup.py         # Master ICT analysis tool
+│   ├── ie_confluence_for_ict.py     # IE confluence scoring
+│   ├── ie_fetch_order_book.py       # Order book pressure
+│   ├── ie_fetch_funding.py          # Funding rate
+│   ├── ie_fetch_trade_flow.py       # Trade flow
+│   ├── ie_fetch_open_interest.py    # Open interest
+│   ├── ie_liquidation_tracker.py    # Liquidation events
+│   ├── ie_order_book_microstructure.py  # Spoofing/icebergs
+│   └── tool_fetch_hl_raw.py         # Raw candle data
+├── ie/                       # Institutional Engine (supporting modules)
+│   ├── cache.py              # Caching for IE tools
+│   ├── calculations.py       # IE metric calculations
+│   └── data_models.py        # IE data structures
+├── memory/                   # Conversation memory
+│   └── session_manager.py    # Session persistence
+├── ICT_SMC_Strategy.md       # Full ICT/SMC methodology reference
+└── README.md                 # This file
 ```
 
 ---
 
-## Core Philosophy
+## Strategy Reference
 
-### What We Do Differently
+For complete ICT/SMC methodology, see [ICT_SMC_Strategy.md](ICT_SMC_Strategy.md).
 
-**Traditional Retail Trading**:
-- Chart patterns (subjective, lagging)
-- Gut feelings (emotional, unreliable)
-- Hope and guesswork (gambling)
-- Win rate: 40-45%
-
-**EMERALD Institutional Approach**:
-- Track what institutions DO, not what charts SHOW
-- Order book: Where is real money positioned?
-- Funding: When is the crowd maximally wrong?
-- OI: Are smart players accumulating or distributing?
-- Only trade when 3+ metrics align
-- Quantitative risk management
-- Win rate: 60-70% (high selectivity)
-
-### The Edge
-
-**Multi-Signal Convergence**:
-- Single metric = noise (50/50 coin flip)
-- 2 metrics = interesting (60% win rate)
-- 3+ metrics = high probability (75%+ win rate)
-- **We only trade 70+ convergence scores**
-
-**Example**:
-```
-BTC at resistance after rally
-
-Single metric view (retail):
-"Price looks extended, might short"
-→ 50/50 guess
-
-EMERALD convergence view:
-- Order Book: -0.68 (strong ask pressure) ✓
-- Funding: +14% (extreme bullish crowd) ✓
-- Basis: +0.31% (premium, aligned) ✓
-- VWAP: +2.1σ (statistical extreme) ✓
-- OI: -5% while price +2% (divergence) ✓
-Score: 85/100 (A+ grade)
-→ High conviction short (75%+ win probability)
-```
-
----
-
-## Trading Strategy
-
-See **[strategy.md](Documentation/strategy.md)** for complete details on:
-
-- How we make money
-- The 5 institutional metrics
-- Phase 2 advanced signals
-- Multi-signal convergence scoring
-- Entry/exit rules
-- Position sizing (scales with grade)
-- Risk management layer
-- Expected performance (65% win rate, 2.5R average win)
-
-**TLDR**: We detect institutional positioning before it's obvious, only trade when multiple independent signals align, and size positions to match setup quality. This creates a statistical edge that compounds over time.
-
----
-
-## Features
-
-### Phase 1: Institutional-Grade Quantitative Engine
-
-**5 Core Metrics** (0-100 convergence scoring):
-1. **Order Book Imbalance** - Real-time bid/ask pressure
-2. **Funding Rate** - Sentiment extremes (contrarian signal)
-3. **Trade Flow** - Aggressive buyer vs seller dominance
-4. **Perpetuals Basis** - Spot-perp spread (arb opportunities)
-5. **Open Interest Divergence** - Smart money positioning
-
-**Multi-Timeframe Convergence**:
-- Analyzes 1m/5m/15m simultaneously
-- Requires all timeframes to align
-- VWAP statistical deviation (Z-score)
-- Volume confirmation
-
-### Phase 2: Advanced Liquidity Intelligence
-
-**Order Book Microstructure**:
-- Spoofing detection (fake liquidity, 3+ appearances)
-- Iceberg orders (hidden institutional activity, 3+ refills)
-- Wall dynamics (moving support/resistance)
-- 60-second rolling window analysis
-
-**Liquidation Cascade Tracker**:
-- Mass liquidation detection (5+ in 5 minutes)
-- Short squeeze vs long squeeze identification
-- Stop hunt zone mapping (>$100k liquidations)
-
-**Cross-Exchange Arbitrage Monitor**:
-- Hyperliquid vs Binance price comparison
-- Arbitrage flow signals (>0.1% deviation)
-- Institutional arb bot pressure detection
-
-### Conversation Memory
-
-**Persistent Sessions**:
-- Auto-continue today's session
-- Named sessions for workflows
-- Configurable memory depth (5-50 messages)
-- JSON file storage
-- Cross-session context
-
-**Example**:
-```bash
-# Morning
-$ python agent/agent.py "What's the overall market bias?"
-$ python agent/agent.py "BTC setup on 1h?"
-$ python agent/agent.py "Compare with ETH"
-# All three queries share context - agent remembers previous discussion
-```
-
----
-
-## Grading System
-
-### Setup Grades
-
-| Grade | Score | Meaning | Position Size |
-|-------|-------|---------|---------------|
-| **A+** | 70-100 | High conviction - All metrics aligned | 1.5% risk (full size) |
-| **A** | 50-69 | Good setup - Most metrics confirm | 1.0% risk (75% size) |
-| **B** | 30-49 | Acceptable - Some confirmation | 0.75% risk (50% size) |
-| **C** | <30 | Low confidence - **SKIP TRADE** | 0% (no trade) |
-
-### Convergence Scoring Algorithm
-
-```
-Order Book Alignment:        25 points (imbalance > 0.4)
-Trade Flow Alignment:        25 points (flow > 0.4)
-VWAP Multi-Timeframe:        30 points (all TFs aligned)
-Funding-Basis Convergence:   20 points (both extreme + aligned)
-
-Special Modifiers:
-  Funding-Basis Divergence:  -15 points (conflicting signals)
-  Phase 2 Confluence:        +10 points (iceberg + cascade)
-  Low Volume:                -10 points (volume < 0.6x avg)
-
-Total: 0-100 (capped at 100)
-```
-
----
-
-## Requirements
-
-- Python 3.9+
-- Anthropic API key (Claude AI)
-- Internet connection (Hyperliquid API)
-
-**Key Dependencies**:
-- `langchain` - Agent framework
-- `anthropic` - Claude models
-- `requests` - HTTP client
-- `python-dotenv` - Environment management
-
-See `requirements.txt` for complete list.
+**Key Sections**:
+- Swing High/Low Detection (3-candle pattern)
+- Market Structure Determination (HH/HL vs LL/LH)
+- Dealing Range Calculation
+- Discount/Premium Zones
+- Liquidity Pool Identification
+- HTF Alignment Requirements
+- Entry/Exit Rules
 
 ---
 
 ## Configuration
 
-All settings in `config/settings.py`:
+Key settings in `config/settings.py`:
 
-```python
-# Agent behavior
-AGENT_CONFIG = AgentConfig(
-    max_tool_calls_per_response=3,
-    model_temperature=0.25,
-    max_tokens=2048,
-)
+**ICT Parameters**:
+- `min_swing_candles`: 3 (swing detection pattern)
+- `discount_threshold`: 0.50 (price below 50% = discount)
+- `premium_threshold`: 0.50 (price above 50% = premium)
+- `htf_required_timeframes`: ["1d", "4h", "1h"]
+- `min_structure_confidence`: 0.7 (70% confidence minimum)
 
-# IE thresholds
-IE_CONFIG = IEConfig(
-    strong_imbalance_threshold=0.4,
-    extreme_funding_threshold_pct=10.0,
-    a_plus_threshold=70,  # 70+ = A+ grade
-)
+**IE Confluence Weights**:
+- `order_book_points`: 20
+- `trade_flow_points`: 20
+- `funding_extreme_points`: 15
+- `oi_divergence_points`: 20
 
-# Interval limits
-INTERVAL_CONSTRAINTS = {
-    "1m": IntervalConstraints(max_lookback_hours=1.5),
-    "15m": IntervalConstraints(max_lookback_hours=24),
-    # ...
-}
-```
-
-See **[configuration.md](Documentation/configuration.md)** for complete reference.
+**Position Sizing**:
+- `base_position_risk_pct`: 1.0 (1% risk per trade)
+- `grade_a_plus_position_mult`: 1.0 (full size for A+ setups)
+- `grade_a_position_mult`: 0.75 (75% for A setups)
+- `grade_b_position_mult`: 0.5 (50% for B setups)
 
 ---
 
-## Testing
+## FAQ
 
-### Test Phase 1 Tools
+**Q: What if HTF timeframes conflict?**
+A: NO TRADE. Wait for alignment. Never trade against higher timeframe structure.
 
-```bash
-# Individual metrics
-python tools/ie_fetch_order_book.py
-python tools/ie_fetch_funding.py
-python tools/ie_fetch_perpetuals_basis.py
+**Q: Can I trade from mid-range?**
+A: No. Mid-range (45-55%) offers poor risk/reward. Wait for discount or premium.
 
-# Unified metrics
-python -c "from tools.ie_fetch_institutional_metrics import fetch_institutional_metrics; import json; print(json.dumps(fetch_institutional_metrics('BTC')['summary'], indent=2))"
+**Q: What if there's a valid ICT setup but weak IE confluence?**
+A: Proceed with caution. ICT setup is valid, but reduce position size based on grade.
 
-# Multi-timeframe convergence
-python -c "from tools.ie_multi_timeframe_convergence import fetch_multi_timeframe_convergence; result = fetch_multi_timeframe_convergence('BTC', ['1m', '5m', '15m']); print(f\"Score: {result['convergence_score']}/100\")"
-```
+**Q: How often do valid setups appear?**
+A: Rarely. ICT is selective - HTF alignment + correct zone = maybe 2-3 setups per week per coin.
 
-### Test Phase 2 Tools
-
-```bash
-# Microstructure
-python -c "from tools.ie_order_book_microstructure import fetch_order_book_microstructure_tool; print(fetch_order_book_microstructure_tool('BTC'))"
-
-# Liquidation tracker
-python -c "from tools.ie_liquidation_tracker import fetch_liquidation_tracker_tool; print(fetch_liquidation_tracker_tool('BTC', 30))"
-
-# Cross-exchange arb
-python -c "from tools.ie_cross_exchange_arb import fetch_cross_exchange_arb_tool; print(fetch_cross_exchange_arb_tool('BTC'))"
-```
-
-### Test with Agent
-
-```bash
-python agent/agent.py "Grade the current BTC setup with full Phase 2 analysis"
-```
+**Q: Can I use this for scalping?**
+A: No. ICT/SMC is a swing/position trading methodology. Entries on 1H-4H, hold for days/weeks.
 
 ---
 
-## What's Next
+## License & Disclaimer
 
-### Current Status
+This is a trading ANALYSIS tool, not a trading bot. It provides setup identification and analysis - YOU make all trading decisions.
 
-- ✅ **Phase 1**: Quantitative engine (complete)
-- ✅ **Phase 2**: Advanced liquidity intelligence (complete)
-- ⏳ **Phase 3**: Risk management layer (planned)
-
-### Phase 3 (Planned)
-
-- Dynamic position sizing algorithms
-- Portfolio-level risk management
-- Multi-coin correlation tracking
-- Automated trade execution hooks
-- Backtest framework
-- Performance analytics dashboard
-
----
-
-## Support
-
-- **Documentation**: Browse `Documentation/` directory
-- **Strategy**: Read [strategy.md](Documentation/strategy.md) first
-- **Getting Started**: [getting-started.md](Documentation/getting-started.md)
-- **Issues**: Report bugs on GitHub issues page
-
----
-
-## Key Principles
-
-1. **Multi-signal convergence is everything** - Single metrics lie
-2. **Only trade institutional alignment** - 70+ score or skip
-3. **Position size reflects confidence** - A+ gets full size, B gets half
-4. **Layered exits maximize R-multiples** - Never exit 100% at once
-5. **Discipline trumps analysis** - Execute the system, don't override
-6. **Data beats discretion** - Trust scores, not feelings
-7. **Quality over quantity** - 3 A+ trades/week beats 20 C trades
-8. **Track what institutions DO** - Not what charts SHOW
-
----
-
-## License
-
-[Your License Here]
-
----
-
-**EMERALD: Institutional-grade quantitative trading. See what retail cannot see.**
+Trading perpetuals involves substantial risk. Never risk more than you can afford to lose.
