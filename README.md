@@ -21,7 +21,7 @@ An **ICT/SMC trading analyst** for Hyperliquid perpetuals. EMERALD analyzes mark
 
 ---
 
-## Core Concepts (ICT/SMC Explained Like You're 18)
+## Core Concepts (ICT/SMC)
 
 ### What is ICT/SMC?
 
