@@ -5,8 +5,8 @@ This module centralizes all configurable parameters for both the tool
 and agent behavior, making them easy to adjust without touching core logic.
 """
 
-from dataclasses import dataclass
-from typing import Dict
+from dataclasses import dataclass, field
+from typing import Dict, List
 
 
 @dataclass
@@ -212,7 +212,98 @@ class IEConfig:
     """Convergence score threshold for B grade."""
 
 
+# ICT/SMC Strategy Configuration
+@dataclass
+class ICTConfig:
+    """Configuration for ICT/SMC trading strategy."""
+
+    # Swing detection
+    min_swing_candles: int = 3
+    """Minimum number of candles for swing detection (3-candle pattern)."""
+
+    # Liquidity grab detection
+    liquidity_grab_threshold_pct: float = 0.1
+    """Minimum % price move beyond previous swing to count as liquidity grab."""
+
+    # Dealing range zones
+    discount_threshold: float = 0.50
+    """Price below this % of dealing range = discount zone (long entries)."""
+
+    premium_threshold: float = 0.50
+    """Price above this % of dealing range = premium zone (short entries)."""
+
+    mid_range_buffer: float = 0.05
+    """Buffer around 50% midpoint (45%-55% = skip, not discount/premium)."""
+
+    # HTF alignment
+    htf_required_timeframes: List[str] = field(default_factory=lambda: ["1d", "4h", "1h"])
+    """Timeframes that MUST align for valid setup (default: Daily, 4H, 1H)."""
+
+    htf_optional_timeframes: List[str] = field(default_factory=lambda: ["1w"])
+    """Optional timeframes for additional confluence (default: Weekly)."""
+
+    # Entry execution
+    entry_timeframe: str = "5m"
+    """Timeframe for entry execution and FVG detection."""
+
+    # FVG parameters
+    fvg_min_size_pct: float = 0.05
+    """Minimum FVG size as % of price to be considered valid."""
+
+    # Equal highs/lows detection
+    equal_levels_tolerance_pct: float = 0.1
+    """Price tolerance for detecting equal highs/lows (%)."""
+
+    # Structure confidence
+    min_structure_confidence: float = 0.7
+    """Minimum confidence score (0.0-1.0) for structure to be considered clear."""
+
+    # Risk management
+    default_risk_reward: float = 1.0
+    """Default risk-to-reward ratio for stop loss calculation."""
+
+    base_position_risk_pct: float = 1.0
+    """Base risk per trade as % of account (before scaling by setup grade)."""
+
+    # IE Confluence scoring (for ICT setup grades)
+    liquidation_grab_points: int = 25
+    """Points if liquidation tracker confirms liquidity grab."""
+
+    order_book_points: int = 20
+    """Points if order book pressure aligns with setup direction."""
+
+    trade_flow_points: int = 20
+    """Points if trade flow aligns with setup direction."""
+
+    oi_divergence_points: int = 20
+    """Points if OI shows divergence (weak rally/selloff)."""
+
+    funding_extreme_points: int = 15
+    """Points if funding at extreme (contrarian signal)."""
+
+    # Grade thresholds (based on IE confluence)
+    grade_a_plus_threshold: int = 75
+    """IE confluence threshold for A+ grade (75-100 points)."""
+
+    grade_a_threshold: int = 50
+    """IE confluence threshold for A grade (50-74 points)."""
+
+    grade_b_threshold: int = 25
+    """IE confluence threshold for B grade (25-49 points)."""
+
+    # Position sizing by grade
+    grade_a_plus_position_mult: float = 1.0
+    """Position size multiplier for A+ setups (full size)."""
+
+    grade_a_position_mult: float = 0.75
+    """Position size multiplier for A setups (75% size)."""
+
+    grade_b_position_mult: float = 0.5
+    """Position size multiplier for B setups (50% size)."""
+
+
 # Global instances - import these in your code
 TOOL_CONFIG = ToolConfig()
 AGENT_CONFIG = AgentConfig()
 IE_CONFIG = IEConfig()
+ICT_CONFIG = ICTConfig()
