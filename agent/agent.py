@@ -20,10 +20,10 @@ if str(BASE_DIR) not in sys.path:
 from tools.tool_fetch_hl_raw import fetch_hl_raw
 from tools.ict_analyze_setup import ict_analyze_setup
 from tools.ie_confluence_for_ict import ict_ie_confluence
-from tools.ie_fetch_order_book import fetch_order_book_data
-from tools.ie_fetch_funding import fetch_funding_rate_data
-from tools.ie_fetch_trade_flow import fetch_trade_flow_data
-from tools.ie_fetch_open_interest import fetch_open_interest_data
+from tools.ie_fetch_order_book import fetch_order_book_metrics_tool
+from tools.ie_fetch_funding import fetch_funding_metrics_tool
+from tools.ie_fetch_trade_flow import fetch_trade_flow_metrics_tool
+from tools.ie_fetch_open_interest import fetch_open_interest_metrics_tool
 from tools.ie_liquidation_tracker import fetch_liquidation_tracker_tool
 from tools.ie_order_book_microstructure import fetch_order_book_microstructure_tool
 from config.settings import AGENT_CONFIG, ICT_CONFIG, generate_constraint_text
@@ -242,10 +242,10 @@ agent = create_agent(
         # IE Confluence for ICT setups
         ict_ie_confluence,
         # Individual IE tools (optional, for deep analysis)
-        fetch_order_book_data,
-        fetch_funding_rate_data,
-        fetch_trade_flow_data,
-        fetch_open_interest_data,
+        fetch_order_book_metrics_tool,
+        fetch_funding_metrics_tool,
+        fetch_trade_flow_metrics_tool,
+        fetch_open_interest_metrics_tool,
         fetch_liquidation_tracker_tool,
         fetch_order_book_microstructure_tool,
         # Raw data tool (rarely needed)

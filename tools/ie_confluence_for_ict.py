@@ -19,10 +19,10 @@ from config.settings import ICT_CONFIG
 
 # Import IE tools (will handle their own imports)
 try:
-    from tools.ie_fetch_order_book import fetch_order_book_data
-    from tools.ie_fetch_funding import fetch_funding_rate_data
-    from tools.ie_fetch_trade_flow import fetch_trade_flow_data
-    from tools.ie_fetch_open_interest import fetch_open_interest_data
+    from tools.ie_fetch_order_book import fetch_order_book_metrics
+    from tools.ie_fetch_funding import fetch_funding_metrics
+    from tools.ie_fetch_trade_flow import fetch_trade_flow_metrics
+    from tools.ie_fetch_open_interest import fetch_open_interest_metrics
 except ImportError:
     # Tools may not be importable in all environments
     pass
@@ -64,7 +64,7 @@ def ict_ie_confluence(coin: str, direction: str) -> str:
 
     # 1. Order Book Check (+20 points)
     try:
-        ob_result = fetch_order_book_data(coin)
+        ob_result = fetch_order_book_metrics(coin)
         if isinstance(ob_result, dict) and "imbalance" in ob_result:
             imbalance = ob_result["imbalance"]
 
@@ -82,7 +82,7 @@ def ict_ie_confluence(coin: str, direction: str) -> str:
 
     # 2. Trade Flow Check (+20 points)
     try:
-        tf_result = fetch_trade_flow_data(coin)
+        tf_result = fetch_trade_flow_metrics(coin)
         if isinstance(tf_result, dict) and "flow_imbalance" in tf_result:
             flow = tf_result["flow_imbalance"]
 
@@ -100,7 +100,7 @@ def ict_ie_confluence(coin: str, direction: str) -> str:
 
     # 3. Funding Rate Check (+15 points, contrarian)
     try:
-        funding_result = fetch_funding_rate_data(coin)
+        funding_result = fetch_funding_metrics(coin)
         if isinstance(funding_result, dict) and "funding_rate_annualized_pct" in funding_result:
             funding_pct = funding_result["funding_rate_annualized_pct"]
 
@@ -119,7 +119,7 @@ def ict_ie_confluence(coin: str, direction: str) -> str:
 
     # 4. OI Divergence Check (+20 points)
     try:
-        oi_result = fetch_open_interest_data(coin)
+        oi_result = fetch_open_interest_metrics(coin)
         if isinstance(oi_result, dict) and "interpretation" in oi_result:
             interpretation = oi_result["interpretation"]
 
