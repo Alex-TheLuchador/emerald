@@ -137,3 +137,18 @@ Once I established the dealing range and saw another FVG on the 1h chart, price 
 (Update) So yet again I ended up closing the trade early for profit. It was close to my TP level and I saw price being very indecisive, so I took profits right there for a decent gain. Not a bad play, but I do have paper hands right now. I've got to train that bad habit out of me.
 
 ### Trade 2 Review
+This was a good trade.
+
+<!-- meta: tag=journal, date=2025-11-10 -->
+## November 10
+
+<!-- meta: tag=journal, tag=all_trades, date=2025-11-10-->
+### Trades
+| Trade                  | Crypto | Entry | Exit | Direction | PnL                    |
+| ---------------------- | ------ | ----- | ---- | --------- | ---------------------- |
+| 1                      |        | $     | $    |           | $                      |
+| <strong>TOTAL</strong> |        |       |      |           | <strong>$0.00</strong> |
+
+<!-- meta: tag=journal, tag=captains_log, date=2025-11-10 -->
+### Captain's Log
+I haven't taken a trade in a few days (last few days was the weekend; Friday only had 1 trade which was a loss for ~$12) since the market is less clear than usual. I really have to lock in and stick to the plan. I'm so anxious to get big wins and make it big because I just KNOW people are getting rich right now. Some how, some way, someone in crypto is making money in trading. But I need patience.
