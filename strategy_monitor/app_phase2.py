@@ -212,7 +212,6 @@ def main():
         st.markdown("**🧪 Testing**")
         if st.button("Load Test Funding History"):
             # Add fake historical data for testing
-            import time
             current_time = time.time()
             test_funding = 12.5
 
