@@ -190,7 +190,7 @@ class MultiTimeframeStorage:
             return None
 
         target_ts = time.time() - (hours_ago * 3600)
-        tolerance = 900  # 15 minutes
+        tolerance = 3600  # 1 hour (funding updates hourly on Hyperliquid)
 
         snapshots = self.funding_history[coin]
         closest = None
