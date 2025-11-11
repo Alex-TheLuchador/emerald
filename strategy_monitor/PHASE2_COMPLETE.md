@@ -127,13 +127,13 @@ LiquiditySignal(
 - Conflicted → SKIP (wait for alignment)
 
 **Run Command**:
-```bash
+```powershell
 cd strategy_monitor
-./run_phase2.sh
+.\run_phase2.ps1
 ```
 
 Or:
-```bash
+```powershell
 streamlit run app_phase2.py
 ```
 
@@ -206,8 +206,8 @@ python api_client.py
 Should return live data for BTC/ETH/SOL
 
 ### 2. Run Dashboard
-```bash
-./run_phase2.sh
+```powershell
+.\run_phase2.ps1
 ```
 Access at http://localhost:8501
 
@@ -261,7 +261,7 @@ These can be adjusted based on live trading results.
 - `metrics/positioning.py` - Institutional positioning signal
 - `metrics/liquidity.py` - Institutional liquidity signal
 - `app_phase2.py` - Streamlit dashboard
-- `run_phase2.sh` - Dashboard launcher
+- `run_phase2.ps1` - Dashboard launcher (PowerShell)
 - `PHASE2_COMPLETE.md` - This file
 
 **Modified**:
@@ -334,9 +334,9 @@ Before moving to Phase 3:
 ## Ready to Test
 
 **Command**:
-```bash
+```powershell
 cd /home/user/emerald/strategy_monitor
-./run_phase2.sh
+.\run_phase2.ps1
 ```
 
 **Prerequisites**:
