@@ -1,18 +1,43 @@
 # Hyperliquid Strategy Monitor
 
-Real-time trading signal generator based on institutional order flow, funding rates, and market structure.
+Automated trading signal system that tells you when to trade by analyzing real-time market data.
+
+## How It Works (ELI18)
+
+Think of this as a "bullshit detector" for crypto markets. It watches 5 different signals to figure out if a price move is real or fake:
+
+1. **Order Book** - Shows where big money is waiting. If there's way more buy orders than sell orders, that's bullish pressure.
+
+2. **Funding Rate** - The "crowd sentiment tax". When everyone's long, they pay a high funding rate. High funding = everyone's greedy = time to fade them (contrarian signal).
+
+3. **VWAP** - The average price institutions paid. If price is too far above/below this, it's "stretched" and likely to snap back (mean reversion).
+
+4. **Trade Flow** - Detects who's being aggressive. Rising price on high volume = institutions buying hard. Falling price on high volume = institutions dumping.
+
+5. **Open Interest** - Shows if new positions are opening or closing. Price up + OI up = real trend (new buyers). Price up + OI down = fake rally (shorts just covering, fade it).
+
+**The System:**
+- Calculates all 5 metrics every few seconds
+- Gives each one a score based on how extreme it is
+- Adds them up (max 100 points)
+- If score ≥70 AND 3+ signals point the same direction → TRADE
+- Otherwise → SKIP
+
+**Output:** "SHORT BTC at $67,850. Stop: $69,207. Target: $66,825. Confidence: HIGH"
+
+No guessing, no emotions. Just math.
 
 ## Project Structure
 
 ```
 strategy_monitor/
-├── config.py           # Configuration and thresholds
-├── api_client.py       # Hyperliquid API client (async)
-├── storage.py          # SQLite storage for OI history
-├── metrics.py          # Metric calculations (Phase 1)
-├── signal_generator.py # Signal generation logic (Phase 2)
-├── app.py             # Streamlit UI (Phase 3+)
-└── oi_history.db      # SQLite database (auto-generated)
+├── config.py           # Thresholds and settings
+├── api_client.py       # Fetches data from Hyperliquid (async/parallel)
+├── storage.py          # Saves Open Interest history (SQLite)
+├── metrics.py          # Calculates the 5 metrics
+├── signal_generator.py # Generates LONG/SHORT/SKIP signals
+├── app.py             # Web UI (Streamlit) - coming soon
+└── oi_history.db      # Database (auto-created)
 ```
 
 ## Setup
@@ -22,34 +47,22 @@ cd strategy_monitor
 pip install -r requirements.txt
 ```
 
-## Development Phases
-
-- ✅ **Phase 0**: Foundation (API client, storage)
-- ⏳ **Phase 1**: Metrics engine
-- ⏳ **Phase 2**: Signal generator
-- ⏳ **Phase 3**: Basic UI
-- ⏳ **Phase 4**: Multi-asset + charts
-- ⏳ **Phase 5**: Polish + optimization
-
 ## Testing
 
 Test individual components:
 
 ```bash
-python api_client.py    # Test API connectivity
-python storage.py       # Test OI storage
-python metrics.py       # Test metric calculations (Phase 1)
+python api_client.py        # Test API (needs internet)
+python storage.py           # Test database
+python metrics.py           # Test calculations
+python signal_generator.py  # Test signal generation
 ```
 
-## Strategy Overview
+## Development Status
 
-Based on 5 core metrics:
-1. **Order Book Imbalance** - Where is liquidity?
-2. **Funding Rate** - Sentiment extreme?
-3. **VWAP Deviation** - Price stretched?
-4. **Trade Flow** - Who's the aggressor?
-5. **Open Interest Divergence** - Real trend or fake?
-
-Plus basis spread for validation.
-
-Generates signals when convergence score ≥70 and 3+ metrics align.
+- ✅ **Phase 0**: Foundation (API client, storage)
+- ✅ **Phase 1**: Metrics engine (all 6 calculations)
+- ✅ **Phase 2**: Signal generator (convergence scoring)
+- ⏳ **Phase 3**: Basic UI (Streamlit dashboard)
+- ⏳ **Phase 4**: Multi-asset + charts
+- ⏳ **Phase 5**: Polish + optimization
