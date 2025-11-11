@@ -29,11 +29,12 @@ class InstitutionalPositioning:
     """
 
     def __init__(self):
-        # Thresholds from Ed's spec
-        self.ACCELERATION_HIGH = 0.05
-        self.ACCELERATION_MODERATE = 0.03
-        self.VELOCITY_HIGH = 0.05
-        self.VELOCITY_MODERATE = 0.03
+        # Thresholds recalibrated for realistic funding rate dynamics
+        # Funding rates typically 0.01-0.05% per 8h, changes are 0.001-0.01% per 4h
+        self.ACCELERATION_HIGH = 0.0002       # 0.02% (strong acceleration)
+        self.ACCELERATION_MODERATE = 0.0001   # 0.01% (moderate acceleration)
+        self.VELOCITY_HIGH = 0.0003           # 0.03% (strong velocity)
+        self.VELOCITY_MODERATE = 0.0001       # 0.01% (moderate velocity)
         self.VOLUME_SURGE = 1.5
         self.VOLUME_MODERATE = 1.2
         self.VOLUME_DECLINE = 0.8
@@ -181,19 +182,21 @@ class InstitutionalPositioning:
         strength = 0
 
         # Acceleration (0-4 points)
-        if abs(acceleration) > 0.08:
+        # Recalibrated for realistic funding dynamics (0.0001-0.0003% typical)
+        if abs(acceleration) > 0.0003:  # Extreme: >0.03%
             strength += 4
-        elif abs(acceleration) > self.ACCELERATION_HIGH:
+        elif abs(acceleration) > self.ACCELERATION_HIGH:  # High: >0.02%
             strength += 3
-        elif abs(acceleration) > self.ACCELERATION_MODERATE:
+        elif abs(acceleration) > self.ACCELERATION_MODERATE:  # Moderate: >0.01%
             strength += 2
 
         # Velocity (0-3 points)
-        if abs(velocity) > 0.10:
+        # Recalibrated for realistic funding dynamics (0.0001-0.0005% typical)
+        if abs(velocity) > 0.0005:  # Extreme: >0.05%
             strength += 3
-        elif abs(velocity) > 0.06:
+        elif abs(velocity) > 0.0003:  # High: >0.03%
             strength += 2
-        elif abs(velocity) > self.VELOCITY_MODERATE:
+        elif abs(velocity) > self.VELOCITY_MODERATE:  # Moderate: >0.01%
             strength += 1
 
         # Volume (0-2 points)
@@ -221,24 +224,26 @@ class InstitutionalPositioning:
 
 
 def test_positioning():
-    """Test institutional positioning signal"""
+    """Test institutional positioning signal with realistic funding rates"""
     print("Testing Institutional Positioning Signal...")
+    print("Note: Funding rates are 8-hour rates stored as percentages (e.g., 0.015%)")
 
     signal_gen = InstitutionalPositioning()
 
     # Test case 1: Institutional accumulation (strong bullish)
     print("\n1. Testing INSTITUTIONAL_ACCUMULATION:")
+    print("   Scenario: Funding accelerating up + high volume surge")
     funding_dynamics = {
-        'current': 15.5,
-        'funding_4h_ago': 12.0,
-        'funding_8h_ago': 10.5,
-        'velocity_4h': 3.5,  # Strong positive velocity
-        'velocity_8h': 5.0,
-        'acceleration': 0.06  # Strong acceleration
+        'current': 0.035,        # 0.035% (strong positive funding)
+        'funding_4h_ago': 0.028,  # 0.028%
+        'funding_8h_ago': 0.022,  # 0.022%
+        'velocity_4h': 0.0007,    # +0.0007% change (strong positive velocity)
+        'velocity_8h': 0.013,     # +0.013% over 8h
+        'acceleration': 0.0003    # Strong acceleration (0.03%)
     }
     volume_data = {
         'current': 150000000,
-        'avg_24h': 80000000
+        'avg_24h': 80000000  # 1.875x surge
     }
 
     signal = signal_gen.analyze(funding_dynamics, volume_data)
@@ -250,17 +255,18 @@ def test_positioning():
 
     # Test case 2: Exhaustion (contrarian)
     print("\n2. Testing EXHAUSTION:")
+    print("   Scenario: High funding but slowing + declining volume")
     funding_dynamics = {
-        'current': 18.0,
-        'funding_4h_ago': 16.5,
-        'funding_8h_ago': 15.5,
-        'velocity_4h': 1.5,  # Still positive
-        'velocity_8h': 2.5,
-        'acceleration': -0.04  # Negative acceleration (slowing)
+        'current': 0.045,         # 0.045% (high funding)
+        'funding_4h_ago': 0.042,  # 0.042%
+        'funding_8h_ago': 0.037,  # 0.037%
+        'velocity_4h': 0.0003,    # +0.0003% (still positive but slowing)
+        'velocity_8h': 0.008,     # +0.008% over 8h
+        'acceleration': -0.0002   # Negative acceleration (slowing down)
     }
     volume_data = {
         'current': 60000000,
-        'avg_24h': 90000000
+        'avg_24h': 90000000  # 0.67x declining volume
     }
 
     signal = signal_gen.analyze(funding_dynamics, volume_data)
@@ -272,17 +278,18 @@ def test_positioning():
 
     # Test case 3: Neutral
     print("\n3. Testing NEUTRAL:")
+    print("   Scenario: Stable funding + normal volume")
     funding_dynamics = {
-        'current': 8.0,
-        'funding_4h_ago': 7.8,
-        'funding_8h_ago': 7.9,
-        'velocity_4h': 0.2,  # Low velocity
-        'velocity_8h': 0.1,
-        'acceleration': 0.01  # Low acceleration
+        'current': 0.015,         # 0.015%
+        'funding_4h_ago': 0.014,  # 0.014%
+        'funding_8h_ago': 0.0145, # 0.0145%
+        'velocity_4h': 0.00001,   # +0.00001% (minimal change)
+        'velocity_8h': 0.0005,    # +0.0005% over 8h
+        'acceleration': 0.00001   # Minimal acceleration
     }
     volume_data = {
         'current': 100000000,
-        'avg_24h': 100000000
+        'avg_24h': 100000000  # 1.0x normal volume
     }
 
     signal = signal_gen.analyze(funding_dynamics, volume_data)
@@ -292,6 +299,10 @@ def test_positioning():
     print(f"   Confidence: {signal.confidence}")
 
     print("\n✅ All tests passed!")
+    print("\nRealistic funding rate ranges:")
+    print("  - Typical 8h rate: 0.010% to 0.030%")
+    print("  - 4h velocity: 0.0001% to 0.0005% (normal), >0.001% (strong)")
+    print("  - Acceleration: 0.0001% to 0.0003% (normal), >0.0005% (extreme)")
 
 
 if __name__ == "__main__":
