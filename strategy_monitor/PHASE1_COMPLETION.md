@@ -74,70 +74,35 @@ storage.get_orderbook_velocity(coin, lookback_snapshots)
 
 ## What We Need Clarification On
 
-### 🔴 Critical: Whale Address Discovery
+### ✅ Resolved: Whale Address Discovery
 
 **Question**: How do we get whale wallet addresses on Hyperliquid?
 
-**Options researched**:
-1. **Official Hyperliquid API leaderboard endpoint**
-   - Payload: `{"type": "leaderboard", "coin": "BTC"}`
-   - Status: Unknown if this exists
+**Answer**: Manual list provided by user at project root.
 
-2. **Third-party APIs** (CoinGlass, HyperTracker)
-   - CoinGlass has whale tracking API
-   - May require API key / subscription
-   - Example: https://www.coinglass.com/hyperliquid
+**Implementation approach**:
+1. Load whale addresses from file on startup
+2. Track positions for known whales via `get_user_state(address)`
+3. Store whale position snapshots in `MultiTimeframeStorage`
 
-3. **Manual address list**
-   - You provide known whale addresses
-   - We track those specific wallets
-   - Simpler but less comprehensive
-
-**Current implementation**: Placeholder that returns empty list if endpoint doesn't exist
-
-**Recommendation**: Start with Option 3 (manual list) for Phase 2, research API integrations later
+**Status**: Ready to integrate once file location is confirmed
 
 ---
 
-### ✅ Resolved: Historical Funding Rates
-
-**Question**: Does Hyperliquid API provide historical funding rates?
-
-**Answer**: YES! Hyperliquid has a `fundingHistory` endpoint.
-
-**Endpoint**: `POST https://api.hyperliquid.xyz/info`
-```json
-{
-    "type": "fundingHistory",
-    "coin": "ETH",
-    "startTime": <timestamp_ms>,
-    "endTime": <timestamp_ms>
-}
-```
-
-**Implementation**:
-- ✅ Updated `get_funding_history()` in `api_client.py`
-- ✅ Can fetch up to 7 days of history on demand
-- ✅ Can backfill historical data on startup if needed
-
-**Storage strategy**:
-- Still store snapshots for fast access (no API call needed)
-- Use API to backfill missing data on startup
-- Redundancy if API is temporarily down
-
----
-
-### 🟢 Nice-to-Have: Cohort Data
+### ✅ Resolved: Cohort Data
 
 **Question**: Does Hyperliquid API provide cohort breakdowns (whale vs retail OI)?
 
-**Services that provide this**:
-- **HyperTracker**: Live cohort analysis (Shrimp, Whale, Smart Money)
-- **CoinGlass**: Whale position tracking
+**Answer**: NO. Hyperliquid does not provide this data via API.
 
-**Current approach**: Not implemented yet
+**Implication**:
+- Cannot overlay whale vs retail OI on signals
+- Can still track individual whale positions from manual list
+- Third-party services (HyperTracker, CoinGlass) provide cohort data but require separate integration
 
-**Recommendation**: Focus on Phase 2 signals first. Add cohort overlays in Phase 4 if API is available.
+**Recommendation**:
+- Phase 2: Track individual whale positions from manual list
+- Phase 4: Consider third-party cohort API if needed
 
 ---
 
@@ -168,34 +133,39 @@ Status: Requires live Hyperliquid API access
 - [x] Order book velocity tracking
 - [x] Tested and working storage layer
 
-### ⏳ Pending Clarification
-- [ ] Whale address discovery method
+### ✅ All Clarifications Resolved
+- [x] ~~Whale address discovery method~~ ✅ RESOLVED (Manual list provided)
 - [x] ~~Historical funding rate availability~~ ✅ RESOLVED (API provides `fundingHistory`)
-- [ ] Cohort data API endpoints
+- [x] ~~Cohort data API endpoints~~ ✅ RESOLVED (Not available via API)
 
 ### 📦 Ready for Phase 2
 With current infrastructure, we can build:
-- ✅ Funding velocity + volume signal (Ed's Signal 3)
-- ✅ Order book imbalance signal (Ed's Signal 1)
-- ⚠️ Whale overlay (needs address list)
-- ⏳ Cohort divergence (needs API clarification)
+- ✅ Funding velocity + volume signal (Ed's Signal 3) - fully ready
+- ✅ Order book imbalance signal (Ed's Signal 1) - fully ready
+- ✅ Whale position tracking (manual list provided) - ready to integrate
+- ⚠️ Cohort divergence (not available via API) - defer to Phase 4 or third-party integration
 
 ---
 
 ## Next Steps
 
-### For You (User)
-Please clarify:
-1. **Whale addresses**: Do you have a list of known whale wallets to track? Or should we research third-party APIs?
-2. **API access**: Is the Hyperliquid API working from your environment? (We can test `python api_client.py`)
-3. **Cohort data priority**: How important is whale vs retail OI breakdowns for Phase 2?
+### ✅ All Clarifications Complete
 
-### For Phase 2 (Week 2)
-Once we have clarifications, we'll build:
+**Resolved**:
+1. ✅ Whale addresses - Manual list provided (pending file location)
+2. ✅ Historical funding - API provides `fundingHistory` endpoint
+3. ✅ Cohort data - Not available via Hyperliquid API (deferred to Phase 4)
+
+### 🚀 Ready to Start Phase 2 (Week 2)
+
+**What we'll build**:
 1. **Signal 1**: Order book imbalance + concentration + velocity
 2. **Signal 2**: Funding velocity + acceleration + volume context
-3. **Basic dashboard**: Display both signals with real-time data
-4. **Validation**: Compare automated signals to your manual trading calls
+3. **Whale integration**: Load whale list, track positions
+4. **Basic dashboard**: Display both signals with real-time data
+5. **Validation**: Compare automated signals to your manual trading calls
+
+**First task**: Point me to the whale list file location, then we'll proceed with Phase 2 implementation.
 
 ---
 
