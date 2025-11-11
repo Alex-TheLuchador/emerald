@@ -37,7 +37,8 @@ strategy_monitor/
 ├── metrics.py          # Calculates the 5 metrics
 ├── signal_generator.py # Generates LONG/SHORT/SKIP signals
 ├── app.py              # Streamlit UI
-├── run.sh              # Launch script
+├── run.sh              # Launch script (Linux/Mac)
+├── run.ps1             # Launch script (Windows)
 └── oi_history.db       # Database (auto-created)
 ```
 
@@ -51,8 +52,15 @@ pip install -r requirements.txt
 ## Running the UI
 
 **Quick Start:**
+
+Linux/Mac:
 ```bash
 ./run.sh
+```
+
+Windows (PowerShell):
+```powershell
+.\run.ps1
 ```
 
 **Or manually:**
