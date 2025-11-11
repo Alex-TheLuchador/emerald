@@ -221,6 +221,8 @@ class MultiTimeframeStorage:
                 'velocity_8h': float (change over 8h),
                 'acceleration': float (2nd derivative)
             }
+
+            Returns None if insufficient data (need at least 4h of history)
         """
         if coin not in self.funding_history or len(self.funding_history[coin]) == 0:
             return None
@@ -232,11 +234,15 @@ class MultiTimeframeStorage:
         funding_8h = self.get_funding_at_time(coin, 8)
         funding_12h = self.get_funding_at_time(coin, 12)
 
-        dynamics = {'current': current_funding}
+        # Require at least 4h of data for meaningful velocity
+        if funding_4h is None:
+            return None
 
-        if funding_4h is not None:
-            dynamics['funding_4h_ago'] = funding_4h
-            dynamics['velocity_4h'] = current_funding - funding_4h
+        dynamics = {
+            'current': current_funding,
+            'funding_4h_ago': funding_4h,
+            'velocity_4h': current_funding - funding_4h
+        }
 
         if funding_8h is not None:
             dynamics['funding_8h_ago'] = funding_8h
@@ -246,9 +252,11 @@ class MultiTimeframeStorage:
             dynamics['funding_12h_ago'] = funding_12h
 
         # Calculate acceleration (2nd derivative)
-        if 'velocity_4h' in dynamics and funding_8h is not None:
+        if funding_8h is not None:
             velocity_older = funding_4h - funding_8h
             dynamics['acceleration'] = dynamics['velocity_4h'] - velocity_older
+        else:
+            dynamics['acceleration'] = 0.0  # Can't calculate without 8h data
 
         return dynamics
 

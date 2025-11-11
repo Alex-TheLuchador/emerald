@@ -207,6 +207,24 @@ def main():
             st.rerun()
 
         st.markdown("---")
+
+        # Test data option
+        st.markdown("**🧪 Testing**")
+        if st.button("Load Test Funding History"):
+            # Add fake historical data for testing
+            import time
+            current_time = time.time()
+            test_funding = 12.5
+
+            # Add snapshots at 0h, 4h, 8h, 12h ago
+            storage.add_funding_snapshot(coin, test_funding, current_time)
+            storage.add_funding_snapshot(coin, test_funding - 1.5, current_time - 4*3600)
+            storage.add_funding_snapshot(coin, test_funding - 2.0, current_time - 8*3600)
+            storage.add_funding_snapshot(coin, test_funding - 2.5, current_time - 12*3600)
+
+            st.success("✅ Test data loaded! Refresh to see signals.")
+
+        st.markdown("---")
         st.markdown(f"**Whale Addresses Loaded**: {len(whale_addresses)}")
         st.markdown(f"**Storage Stats**:")
         stats = storage.get_stats()
@@ -260,8 +278,26 @@ def main():
         positioning_signal = positioning_analyzer.analyze(funding_dynamics, volume_data)
         display_positioning_signal(positioning_signal, coin)
     else:
-        st.warning(f"⚠️ Insufficient funding history for {coin}. Need at least 8 hours of data.")
-        st.info("The system will automatically collect funding snapshots. Check back in a few hours.")
+        st.warning(f"⚠️ Insufficient funding history for {coin}")
+
+        # Show current status
+        col1, col2 = st.columns(2)
+        with col1:
+            st.info(f"""
+            **What's happening:**
+            - System is collecting funding rate snapshots every refresh
+            - Current funding rate: {current_funding:.3f}%
+            - Snapshots collected: {len(storage.funding_history.get(coin, []))}
+            """)
+
+        with col2:
+            st.info(f"""
+            **Time needed:**
+            - Minimum: 4 hours (for velocity)
+            - Optimal: 8 hours (for acceleration)
+            - After 4 hours: Signal will activate
+            """)
+
         positioning_signal = None
 
     st.markdown("---")
