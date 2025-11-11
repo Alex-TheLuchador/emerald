@@ -104,18 +104,25 @@ def display_positioning_signal(signal, coin: str):
         st.metric("Strength", f"{signal.strength:.1f}/10", f"{signal.confidence} confidence")
 
     with col3:
-        st.metric("Funding Velocity", f"{signal.velocity_4h:+.2f}%", "4h change")
+        st.metric("Funding Velocity", f"{signal.velocity_4h:+.5f}%", "4h change")
 
     with col4:
-        st.metric("Acceleration", f"{signal.acceleration:+.3f}", "2nd derivative")
+        st.metric("Acceleration", f"{signal.acceleration:+.6f}", "2nd derivative")
 
     # Details
     with st.expander("📊 Signal Details"):
         st.write(f"**Regime**: {signal.regime}")
         st.write(f"**Description**: {signal.details.get('regime_description', 'N/A')}")
-        st.write(f"**Current Funding**: {signal.details.get('current_funding', 0):.2f}%")
+        st.write(f"**Current Funding**: {signal.details.get('current_funding', 0):.5f}% (8h rate)")
         st.write(f"**Volume Context**: {signal.details.get('volume_context', 'N/A')}")
         st.write(f"**Volume Ratio**: {signal.volume_ratio:.2f}x average")
+
+    # Debug info
+    with st.expander("🔍 Debug: Funding History"):
+        if funding_dynamics:
+            st.write("**Funding Dynamics:**")
+            st.json(funding_dynamics)
+        st.write(f"**Snapshots in storage**: {len(storage.funding_history.get(coin, []))}")
 
 
 def display_liquidity_signal(signal, coin: str):
