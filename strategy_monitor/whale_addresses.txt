@@ -1,0 +1,8 @@
+# Hyperliquid Whale Addresses
+# Format: One address per line (42-character hexadecimal)
+
+0x5b5d51203a0f9079f8aeb098a6523a13f298c060
+0x5d2f4460ac3514ada79f5d9838916e508ab39bb7
+0x9eec98d048d06d9cd75318fffa3f3960e081daab
+0x0ddf9bae2af4b874b96d287a5ad42eb47138a902
+0xffbd3e51ae0e2c4407434e157965c064f2a11628

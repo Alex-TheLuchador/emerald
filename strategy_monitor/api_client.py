@@ -104,45 +104,196 @@ class HyperliquidClient:
         }
         return await self._post(payload)
 
-    async def get_all_data(self, coin: str) -> Dict[str, Any]:
+    async def get_user_state(self, user_address: str) -> Dict[str, Any]:
+        """
+        Fetch clearinghouse state for a specific user address
+
+        Args:
+            user_address: 42-character hexadecimal address (e.g., "0x...")
+
+        Returns:
+            {
+                "marginSummary": {
+                    "accountValue": str,
+                    "totalNtlPos": str,
+                    "totalRawUsd": str,
+                    "totalMarginUsed": str
+                },
+                "assetPositions": [
+                    {
+                        "position": {
+                            "coin": str,
+                            "szi": str,  # Position size
+                            "leverage": {...},
+                            "liquidationPx": str,
+                            ...
+                        }
+                    }
+                ],
+                ...
+            }
+        """
+        payload = {
+            "type": "clearinghouseState",
+            "user": user_address
+        }
+        return await self._post(payload)
+
+    async def get_funding_history(self, coin: str, lookback_hours: int = 168) -> List[Dict[str, Any]]:
+        """
+        Fetch historical funding rates from Hyperliquid API
+
+        Args:
+            coin: Coin symbol (e.g., "ETH", "BTC")
+            lookback_hours: Hours of history (default 168 = 7 days)
+
+        Returns:
+            List of funding rate snapshots:
+            [
+                {
+                    "coin": "ETH",
+                    "fundingRate": "-0.00022196",
+                    "premium": "-0.00052196",
+                    "time": 1683849600076
+                },
+                ...
+            ]
+        """
+        start_time = int((time.time() - lookback_hours * 3600) * 1000)
+        end_time = int(time.time() * 1000)
+
+        payload = {
+            "type": "fundingHistory",
+            "coin": coin,
+            "startTime": start_time,
+            "endTime": end_time
+        }
+
+        return await self._post(payload)
+
+    async def get_whale_addresses(self, coin: str, min_position_usd: float = 100000) -> List[str]:
+        """
+        Get list of whale wallet addresses for a specific coin
+
+        NOTE: Need clarification on how to get this data:
+        Option 1: Leaderboard API endpoint
+        Option 2: Third-party service (CoinGlass, HyperTracker)
+        Option 3: Scan all addresses with positions (expensive)
+
+        Args:
+            coin: Coin symbol
+            min_position_usd: Minimum position size to be considered a whale
+
+        Returns:
+            List of wallet addresses with positions > min_position_usd
+        """
+        # TODO: NEED CLARIFICATION ON API ENDPOINT
+        # Placeholder structure for now
+        payload = {
+            "type": "leaderboard",  # Hypothetical endpoint
+            "coin": coin,
+            "minNotional": min_position_usd
+        }
+        try:
+            result = await self._post(payload)
+            # Extract addresses from result
+            if isinstance(result, list):
+                return [item.get("address") for item in result if item.get("address")]
+            return []
+        except Exception:
+            # Endpoint may not exist - return empty for now
+            return []
+
+    async def get_batch_user_states(self, user_addresses: List[str]) -> Dict[str, Any]:
+        """
+        Fetch clearinghouse state for multiple users in parallel
+
+        Args:
+            user_addresses: List of wallet addresses
+
+        Returns:
+            Dict mapping address -> user state
+        """
+        if not user_addresses:
+            return {}
+
+        # Fetch all user states in parallel
+        tasks = [self.get_user_state(addr) for addr in user_addresses]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        # Map addresses to results
+        user_states = {}
+        for addr, result in zip(user_addresses, results):
+            if not isinstance(result, Exception):
+                user_states[addr] = result
+
+        return user_states
+
+    async def get_all_data(self, coin: str, include_whale_data: bool = False) -> Dict[str, Any]:
         """
         Fetch all required data for a coin in parallel
+
+        Args:
+            coin: Coin symbol
+            include_whale_data: If True, fetch whale positions (slower)
 
         Returns:
             {
                 "order_book": {...},
                 "perp_data": {...},
                 "spot_data": {...},
-                "candles": [...]
+                "candles": [...],
+                "whale_positions": [...] (optional)
             }
         """
-        # Run all API calls in parallel
-        results = await asyncio.gather(
+        # Base API calls
+        tasks = [
             self.get_order_book(coin),
             self.get_perp_metadata(),
             self.get_spot_metadata(),
             self.get_candles(coin, interval="1m", lookback_minutes=60),
-            return_exceptions=True
-        )
+        ]
+
+        # Optionally add whale data
+        if include_whale_data:
+            tasks.append(self.get_whale_addresses(coin))
+
+        # Run all API calls in parallel
+        results = await asyncio.gather(*tasks, return_exceptions=True)
 
         # Check for errors
         for i, result in enumerate(results):
             if isinstance(result, Exception):
-                raise result
+                # Log but don't fail for optional whale data
+                if i >= 4 and include_whale_data:
+                    results[i] = []
+                else:
+                    raise result
 
-        order_book, perp_meta, spot_meta, candles = results
+        order_book = results[0]
+        perp_meta = results[1]
+        spot_meta = results[2]
+        candles = results[3]
+        whale_addresses = results[4] if include_whale_data and len(results) > 4 else []
 
         # Extract specific coin data from metadata
         perp_data = self._extract_coin_data(perp_meta, coin, "perp")
         spot_data = self._extract_coin_data(spot_meta, coin, "spot")
 
-        return {
+        data = {
             "order_book": order_book,
             "perp_data": perp_data,
             "spot_data": spot_data,
             "candles": candles,
             "timestamp": datetime.now()
         }
+
+        # Add whale data if requested
+        if include_whale_data and whale_addresses:
+            whale_states = await self.get_batch_user_states(whale_addresses)
+            data["whale_positions"] = whale_states
+
+        return data
 
     def _extract_coin_data(
         self,
