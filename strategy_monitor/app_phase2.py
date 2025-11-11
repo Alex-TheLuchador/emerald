@@ -85,7 +85,7 @@ async def bootstrap_funding_history(storage, coin: str, lookback_hours: int = 16
         return 0
 
 
-def display_positioning_signal(signal, coin: str):
+def display_positioning_signal(signal, coin: str, funding_dynamics, storage):
     """Display institutional positioning signal"""
     st.subheader(f"📈 Signal 1: Institutional Positioning ({coin})")
 
@@ -327,7 +327,7 @@ def main():
         }
 
         positioning_signal = positioning_analyzer.analyze(funding_dynamics, volume_data)
-        display_positioning_signal(positioning_signal, coin)
+        display_positioning_signal(positioning_signal, coin, funding_dynamics, storage)
     else:
         st.warning(f"⚠️ Insufficient funding history for {coin}")
 
