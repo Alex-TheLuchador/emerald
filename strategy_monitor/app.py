@@ -75,7 +75,7 @@ def render_signal_header(signal: Dict[str, Any]):
         bg_color = '#4d1a1a'
     else:
         color = '⚪'
-        bg_color = '#2d2d2d'
+        bg_color = "#d3d3d3"
 
     st.markdown(f"""
     <div style='padding: 20px; background-color: {bg_color}; border-radius: 10px; margin-bottom: 20px;'>
