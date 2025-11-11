@@ -78,6 +78,7 @@ def render_signal_header(signal: Dict[str, Any]):
     else:
         color = '⚪'
         bg_color = "#d3d3d3"
+        action_text = 'SKIP (No Setup)'
 
     st.markdown(f"""
     <div style='padding: 20px; background-color: {bg_color}; border-radius: 10px; margin-bottom: 20px;'>
