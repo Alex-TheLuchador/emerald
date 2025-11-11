@@ -36,8 +36,9 @@ strategy_monitor/
 ├── storage.py          # Saves Open Interest history (SQLite)
 ├── metrics.py          # Calculates the 5 metrics
 ├── signal_generator.py # Generates LONG/SHORT/SKIP signals
-├── app.py             # Web UI (Streamlit) - coming soon
-└── oi_history.db      # Database (auto-created)
+├── app.py              # Streamlit UI
+├── run.sh              # Launch script
+└── oi_history.db       # Database (auto-created)
 ```
 
 ## Setup
@@ -46,6 +47,20 @@ strategy_monitor/
 cd strategy_monitor
 pip install -r requirements.txt
 ```
+
+## Running the UI
+
+**Quick Start:**
+```bash
+./run.sh
+```
+
+**Or manually:**
+```bash
+streamlit run app.py
+```
+
+The dashboard will open at `http://localhost:8501` and auto-refresh every 2 seconds.
 
 ## Testing
 
@@ -63,6 +78,6 @@ python signal_generator.py  # Test signal generation
 - ✅ **Phase 0**: Foundation (API client, storage)
 - ✅ **Phase 1**: Metrics engine (all 6 calculations)
 - ✅ **Phase 2**: Signal generator (convergence scoring)
-- ⏳ **Phase 3**: Basic UI (Streamlit dashboard)
+- ✅ **Phase 3**: Basic UI (Streamlit dashboard)
 - ⏳ **Phase 4**: Multi-asset + charts
 - ⏳ **Phase 5**: Polish + optimization
