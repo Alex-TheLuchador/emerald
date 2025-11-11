@@ -99,23 +99,31 @@ storage.get_orderbook_velocity(coin, lookback_snapshots)
 
 ---
 
-### 🟡 Important: Historical Funding Rates
+### ✅ Resolved: Historical Funding Rates
 
 **Question**: Does Hyperliquid API provide historical funding rates?
 
-**Current behavior**:
-- `get_perp_metadata()` returns **current** funding rate
-- We store snapshots ourselves every 15 minutes
-- After 7 days, we'll have full history
+**Answer**: YES! Hyperliquid has a `fundingHistory` endpoint.
 
-**Concern**: If system restarts, we lose history until we rebuild it
+**Endpoint**: `POST https://api.hyperliquid.xyz/info`
+```json
+{
+    "type": "fundingHistory",
+    "coin": "ETH",
+    "startTime": <timestamp_ms>,
+    "endTime": <timestamp_ms>
+}
+```
 
-**Options**:
-1. Store snapshots ourselves (current approach)
-2. Use Hyperliquid historical endpoint (if it exists)
-3. Third-party service (CoinGlass, etc.)
+**Implementation**:
+- ✅ Updated `get_funding_history()` in `api_client.py`
+- ✅ Can fetch up to 7 days of history on demand
+- ✅ Can backfill historical data on startup if needed
 
-**Recommendation**: Continue storing snapshots. After 24 hours, we'll have enough for funding velocity calculations.
+**Storage strategy**:
+- Still store snapshots for fast access (no API call needed)
+- Use API to backfill missing data on startup
+- Redundancy if API is temporarily down
 
 ---
 
@@ -162,7 +170,7 @@ Status: Requires live Hyperliquid API access
 
 ### ⏳ Pending Clarification
 - [ ] Whale address discovery method
-- [ ] Historical funding rate availability
+- [x] ~~Historical funding rate availability~~ ✅ RESOLVED (API provides `fundingHistory`)
 - [ ] Cohort data API endpoints
 
 ### 📦 Ready for Phase 2

@@ -141,31 +141,35 @@ class HyperliquidClient:
 
     async def get_funding_history(self, coin: str, lookback_hours: int = 168) -> List[Dict[str, Any]]:
         """
-        Fetch historical funding rates
-
-        NOTE: Need to clarify if Hyperliquid API provides historical funding
-        or if we need to store snapshots ourselves
+        Fetch historical funding rates from Hyperliquid API
 
         Args:
-            coin: Coin symbol
+            coin: Coin symbol (e.g., "ETH", "BTC")
             lookback_hours: Hours of history (default 168 = 7 days)
 
         Returns:
-            List of funding rate snapshots with timestamps
+            List of funding rate snapshots:
+            [
+                {
+                    "coin": "ETH",
+                    "fundingRate": "-0.00022196",
+                    "premium": "-0.00052196",
+                    "time": 1683849600076
+                },
+                ...
+            ]
         """
-        # TODO: Clarify API endpoint for historical funding
-        # For now, this is a placeholder structure
+        start_time = int((time.time() - lookback_hours * 3600) * 1000)
+        end_time = int(time.time() * 1000)
+
         payload = {
             "type": "fundingHistory",
             "coin": coin,
-            "startTime": int((time.time() - lookback_hours * 3600) * 1000)
+            "startTime": start_time,
+            "endTime": end_time
         }
-        try:
-            return await self._post(payload)
-        except Exception as e:
-            # If endpoint doesn't exist, return empty
-            # We'll need to store snapshots ourselves
-            return []
+
+        return await self._post(payload)
 
     async def get_whale_addresses(self, coin: str, min_position_usd: float = 100000) -> List[str]:
         """
