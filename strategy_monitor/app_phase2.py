@@ -50,6 +50,41 @@ async def fetch_live_data(coin: str) -> Optional[Dict[str, Any]]:
         return None
 
 
+async def bootstrap_funding_history(storage, coin: str, lookback_hours: int = 168) -> int:
+    """
+    Load historical funding data from Hyperliquid on startup
+
+    Args:
+        storage: MultiTimeframeStorage instance
+        coin: Coin symbol (e.g., "BTC", "ETH")
+        lookback_hours: Hours of history to load (default 168 = 7 days)
+
+    Returns:
+        Number of snapshots loaded
+    """
+    try:
+        async with HyperliquidClient() as client:
+            history = await client.get_funding_history(coin, lookback_hours)
+
+            if not history:
+                return 0
+
+            # Add each historical snapshot to storage
+            count = 0
+            for entry in history:
+                # Convert funding rate from decimal string to percentage
+                funding_rate = float(entry['fundingRate']) * 100
+                # Convert timestamp from milliseconds to seconds
+                timestamp = entry['time'] / 1000
+                storage.add_funding_snapshot(coin, funding_rate, timestamp)
+                count += 1
+
+            return count
+    except Exception as e:
+        st.warning(f"⚠️ Could not load historical funding data: {e}")
+        return 0
+
+
 def display_positioning_signal(signal, coin: str):
     """Display institutional positioning signal"""
     st.subheader(f"📈 Signal 1: Institutional Positioning ({coin})")
@@ -237,6 +272,16 @@ def main():
     if not data:
         st.error("Failed to fetch data from Hyperliquid API")
         return
+
+    # Bootstrap historical funding data if not already loaded
+    funding_dynamics = storage.get_funding_dynamics(coin)
+    if funding_dynamics is None:
+        with st.spinner(f"Loading historical funding data for {coin}..."):
+            snapshots_loaded = asyncio.run(bootstrap_funding_history(storage, coin, lookback_hours=168))
+            if snapshots_loaded > 0:
+                st.success(f"✅ Loaded {snapshots_loaded} historical funding snapshots")
+            else:
+                st.warning(f"⚠️ No historical funding data available for {coin}")
 
     # Extract data
     order_book = data.get('order_book', {})
