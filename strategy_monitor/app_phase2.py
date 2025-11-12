@@ -94,11 +94,11 @@ def display_positioning_signal(signal, coin: str, funding_dynamics, storage):
 
     with col1:
         if signal.direction == "BULLISH":
-            st.metric("Direction", "🟢 BULLISH", signal.regime)
+            st.metric("Direction", "🟢 BULLISH", f"Market: {signal.regime}")
         elif signal.direction == "BEARISH":
-            st.metric("Direction", "🔴 BEARISH", signal.regime)
+            st.metric("Direction", "🔴 BEARISH", f"Market: {signal.regime}")
         else:
-            st.metric("Direction", "⚪ NEUTRAL", signal.regime)
+            st.metric("Direction", "⚪ NEUTRAL", f"Market: {signal.regime}")
 
     with col2:
         st.metric("Strength", f"{signal.strength:.1f}/10", f"{signal.confidence} confidence")
@@ -111,11 +111,12 @@ def display_positioning_signal(signal, coin: str, funding_dynamics, storage):
 
     # Details
     with st.expander("📊 Signal Details"):
-        st.write(f"**Regime**: {signal.regime}")
+        st.write(f"**Market State**: {signal.regime}")
         st.write(f"**Description**: {signal.details.get('regime_description', 'N/A')}")
         st.write(f"**Current Funding**: {signal.details.get('current_funding', 0):.5f}% (8h rate)")
         st.write(f"**Volume Context**: {signal.details.get('volume_context', 'N/A')}")
         st.write(f"**Volume Ratio**: {signal.volume_ratio:.2f}x average")
+        st.caption("*Market State refers to the current condition: ACCUMULATION (buying), DISTRIBUTION (selling), MOMENTUM (trending), EXHAUSTION (trend weakening), or NEUTRAL (balanced)*")
 
     # Debug info
     with st.expander("🔍 Debug: Funding History"):
@@ -125,7 +126,7 @@ def display_positioning_signal(signal, coin: str, funding_dynamics, storage):
         st.write(f"**Snapshots in storage**: {len(storage.funding_history.get(coin, []))}")
 
 
-def display_liquidity_signal(signal, coin: str):
+def display_liquidity_signal(signal, coin: str, order_book, storage):
     """Display institutional liquidity signal"""
     st.subheader(f"💰 Signal 2: Institutional Liquidity ({coin})")
 
@@ -161,6 +162,20 @@ def display_liquidity_signal(signal, coin: str):
             st.warning("⚠️ High concentration detected - possible fake wall")
         st.write(f"**Quote Stuffing Detected**: {'Yes ⚠️' if signal.is_manipulated else 'No ✅'}")
         st.write(f"**Dominant Side**: {signal.details.get('dominant_side', 'N/A')}")
+
+    # Debug info
+    with st.expander("🔍 Debug: Order Book Data"):
+        if order_book and order_book.get('levels'):
+            levels = order_book['levels']
+            bids = levels[0] if len(levels) > 0 else []
+            asks = levels[1] if len(levels) > 1 else []
+            st.write(f"**Bid Levels**: {len(bids)}")
+            st.write(f"**Ask Levels**: {len(asks)}")
+            if bids and asks:
+                st.write(f"**Best Bid**: {bids[0][0] if bids[0] else 'N/A'} @ {bids[0][1] if bids[0] else 'N/A'}")
+                st.write(f"**Best Ask**: {asks[0][0] if asks[0] else 'N/A'} @ {asks[0][1] if asks[0] else 'N/A'}")
+                st.write(f"**Spread**: {float(asks[0][0]) - float(bids[0][0]) if bids[0] and asks[0] else 'N/A'}")
+        st.write(f"**Orderbook snapshots in storage**: {len(storage.orderbook_history.get(coin, []))}")
 
 
 def display_summary(positioning_signal, liquidity_signal, coin: str):
@@ -359,7 +374,7 @@ def main():
         previous_snapshots = None  # TODO: Implement snapshot history
 
         liquidity_signal = liquidity_analyzer.analyze(order_book, previous_snapshots)
-        display_liquidity_signal(liquidity_signal, coin)
+        display_liquidity_signal(liquidity_signal, coin, order_book, storage)
     else:
         st.warning(f"⚠️ No order book data available for {coin}")
         liquidity_signal = None
