@@ -1,5 +1,17 @@
 # Hyperliquid Whale Addresses
-# Format: One address per line (42-character hexadecimal)
+#
+# Format: One address per line (42-character hexadecimal starting with 0x)
+#
+# These addresses are tracked for large position changes that may signal
+# institutional activity. Add/remove addresses based on your research.
+#
+# To find whale addresses:
+# 1. Check Hyperliquid leaderboard for top traders
+# 2. Monitor on-chain data for large position holders
+# 3. Track addresses that consistently move markets
+#
+# Note: These are example addresses. Replace with addresses relevant to your
+# trading strategy.
 
 0x5b5d51203a0f9079f8aeb098a6523a13f298c060
 0x5d2f4460ac3514ada79f5d9838916e508ab39bb7

@@ -1,5 +1,15 @@
 """
-Streamlit UI for the Strategy Monitor
+Streamlit UI for the Strategy Monitor (Legacy Version)
+
+DEPRECATED: This is the basic single-coin dashboard using simplified metrics.
+For production use, see app_phase2.py which includes:
+- Multi-coin monitoring
+- Advanced institutional positioning signals
+- Liquidity analysis
+- Whale tracking
+
+To run the modern dashboard:
+    streamlit run app_phase2.py
 """
 import streamlit as st
 import asyncio

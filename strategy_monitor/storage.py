@@ -372,6 +372,43 @@ class MultiTimeframeStorage:
         self.whale_positions.clear()
 
 
+class OIHistoryStorage(MultiTimeframeStorage):
+    """
+    Backward-compatible wrapper for legacy app.py
+
+    Provides the old SQLite-style interface using the new in-memory storage
+    """
+
+    def __init__(self):
+        """Initialize with default parameters for backward compatibility"""
+        super().__init__(
+            oi_retention_hours=168,
+            funding_retention_hours=168,
+            orderbook_retention_hours=1,
+            snapshot_interval_minutes=15
+        )
+
+    def save_snapshot(self, coin: str, oi: float, price: float):
+        """Legacy method: save OI snapshot"""
+        self.add_oi_snapshot(coin, oi, price)
+
+    def get_snapshot(self, coin: str, hours_ago: float) -> Optional[Dict[str, float]]:
+        """
+        Legacy method: get OI snapshot from N hours ago
+
+        Returns:
+            {'open_interest': float, 'price': float} or None
+        """
+        result = self.get_oi_at_time(coin, hours_ago)
+        if result:
+            # Map new format to old format
+            return {
+                'open_interest': result['oi'],
+                'price': result['price']
+            }
+        return None
+
+
 def test_storage():
     """Test the in-memory storage layer"""
     print("Testing Multi-Timeframe In-Memory Storage...")

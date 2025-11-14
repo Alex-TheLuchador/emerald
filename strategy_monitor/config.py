@@ -50,6 +50,3 @@ MIN_ALIGNED_SIGNALS = 3
 # UI Configuration
 REFRESH_INTERVAL_SECONDS = 90
 ORDER_BOOK_LEVELS = 10  # Top N levels to analyze
-
-# Database
-DB_PATH = "strategy_monitor/oi_history.db"
