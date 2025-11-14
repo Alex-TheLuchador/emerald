@@ -9,8 +9,12 @@ Analyzes order book pressure, funding rates, VWAP deviation, trade flow, and ope
 ```bash
 cd strategy_monitor
 pip install -r requirements.txt
-streamlit run app.py
+streamlit run app_phase2.py  # Production dashboard (recommended)
 ```
+
+**Note:** Two dashboard versions available:
+- `app_phase2.py` - **Recommended** - Multi-coin, advanced signals, whale tracking
+- `app.py` - Legacy single-coin version (deprecated)
 
 Dashboard opens at `http://localhost:8501` with auto-refresh every 2 seconds.
 
