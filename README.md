@@ -76,6 +76,13 @@ python -m emerald.api.app
 streamlit run emerald/ui/dashboard.py
 ```
 
+**Dashboard Features:**
+- **Beginner/Advanced Mode** - Toggle between plain English and technical metrics
+- **Real-time Signals** - Live trading signals with confidence levels
+- **Visual Indicators** - Color-coded strength bars and traffic lights
+- **Raw Data Viewer** - Inspect raw Hyperliquid API responses (Advanced mode)
+- **Auto-refresh** - Configurable refresh interval
+
 ### Option 3: Use as Library
 
 ```python
