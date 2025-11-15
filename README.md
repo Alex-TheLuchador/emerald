@@ -17,6 +17,8 @@ emerald/
 ├── strategies/         # Trading strategies
 │   ├── base.py        # Base strategy interface
 │   └── convergence.py # Multi-metric convergence
+├── storage/            # Historical data persistence
+│   └── signal_history.py  # Signal tracking & performance
 ├── api/                # FastAPI REST endpoints
 │   └── app.py
 ├── ui/                 # Streamlit dashboard
@@ -77,11 +79,29 @@ streamlit run emerald/ui/dashboard.py
 ```
 
 **Dashboard Features:**
+
+**Phase 1: Accessibility**
 - **Beginner/Advanced Mode** - Toggle between plain English and technical metrics
 - **Real-time Signals** - Live trading signals with confidence levels
-- **Visual Indicators** - Color-coded strength bars and traffic lights
+- **Visual Indicators** - Color-coded strength bars (🟢🟡🔴) and traffic lights
+- **Plain English Translations** - All 6 metrics have beginner-friendly names
 - **Raw Data Viewer** - Inspect raw Hyperliquid API responses (Advanced mode)
 - **Auto-refresh** - Configurable refresh interval
+
+**Phase 2: Education Layer**
+- **Natural Language Summary** - AI-generated plain English explanations of market conditions
+- **Interactive Tooltips** - Click to learn about each metric with examples
+- **Enhanced Confidence Display** - See which metrics agree/disagree with the signal
+- **Visual Score Breakdown** - Color-coded bars showing point contributions
+- **Context-Aware Help** - Beginner mode shows expanded explanations automatically
+
+**Phase 3: Performance Tracking**
+- **Signal History** - Track all historical signals with P&L tracking
+- **Win Rate Analytics** - See which signals actually worked (profitable %)
+- **Risk-Reward Visualization** - Visual bar chart showing risk vs reward ratio
+- **Cross-Coin Comparison** - Compare signals across all configured coins
+- **Performance Stats** - Total signals, win rate, avg P&L, best/worst trades
+- **Auto-Persistence** - Signals automatically saved to `.emerald_history.json`
 
 ### Option 3: Use as Library
 
