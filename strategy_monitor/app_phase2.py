@@ -172,9 +172,10 @@ def display_liquidity_signal(signal, coin: str, order_book, storage):
             st.write(f"**Bid Levels**: {len(bids)}")
             st.write(f"**Ask Levels**: {len(asks)}")
             if bids and asks:
-                st.write(f"**Best Bid**: {bids[0][0] if bids[0] else 'N/A'} @ {bids[0][1] if bids[0] else 'N/A'}")
-                st.write(f"**Best Ask**: {asks[0][0] if asks[0] else 'N/A'} @ {asks[0][1] if asks[0] else 'N/A'}")
-                st.write(f"**Spread**: {float(asks[0][0]) - float(bids[0][0]) if bids[0] and asks[0] else 'N/A'}")
+                st.write(f"**Best Bid**: ${bids[0]['px']} @ {bids[0]['sz']}")
+                st.write(f"**Best Ask**: ${asks[0]['px']} @ {asks[0]['sz']}")
+                spread = float(asks[0]['px']) - float(bids[0]['px'])
+                st.write(f"**Spread**: ${spread:.2f}")
         st.write(f"**Orderbook snapshots in storage**: {len(storage.orderbook_history.get(coin, []))}")
 
 
